@@ -1,20 +1,18 @@
-#include<bits/stdc++.h>
+#include<stdio.h>
 #include<windows.h>
 using namespace std;
-void Print(int x,int y){
+void Print(int x){
     system("cls");
-    for(int i=0;i<y;++i)
-        printf("\n");
     for(int i=0;i<x;++i)
         printf(" ");
     printf("x");
 }
 int main(){
-    int x=0,y=0,dx=1;
+    int x=0,dx[]={1,-1},op=1;
     while(1){
-        Print(x,y);
-        x=x+dx;
-        if(x==0||x==80) dx*=-1;
+        Print(x);
+        x=x+dx[op];
+        op^=(x==0||x==80);
         Sleep(50);
     }
     return 0;
