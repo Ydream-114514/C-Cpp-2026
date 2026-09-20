@@ -2,6 +2,8 @@
 #include<time.h>
 #include<windows.h>
 #include<conio.h>
+#define KEY_DOWN(VK_NONAME) (GetAsyncKeyState(VK_NONAME) & 0x8000 ? 1 : 0)
+#define KEY_UP(VK_NONAME) (GetAsyncKeyState(VK_NONAME) & 0x8000 ? 0 : 1)
 #define height 110
 #define width 110
 int maze[height][width];
@@ -64,43 +66,40 @@ void print_map(int X,int Y){
 		}
 	}
 }
-void start(int X,int Y){
+void start(){
+	int X=21,Y=21;
+	get_new_maze(X,Y);
 	print_map(X,Y);
 	int player[]={1,1};
 	while(1){
-		if(_kbhit()){
-			int dx=0,dy=0;
-			switch(_getch()){
-				case 119://w
-					if(player[1]!=1) dy=-1;
-					else continue;
-					break;
-				case 97://a
-					if(player[0]!=1) dx=-1;
-					else continue;
-					break;
-				case 115://s
-					if(player[1]!=Y-2) dy=1;
-					else continue;
-					break;
-				case 100://d
-					if(player[0]!=X-2) dx=1;
-					else continue;
-					break;
-				default:
-					continue;
-			}
-			if(maze[player[0]+dx][player[1]+dy]==0) continue;
-			output(player[0],player[1],pic[1]);
-			player[0]+=dx;
-			player[1]+=dy;
-			output(player[0],player[1],pic[2]);
-			if(player[0]==X-2&&player[1]==Y-2){
-				output(0,Y,"win!!!");
-				Sleep(5000);
-				system("cls");
-				return;
-			}
+		int dx=0,dy=0;
+		if(KEY_DOWN(VK_UP)){
+			if(player[1]!=1)
+				dy=-1;
+		}
+		if(KEY_DOWN(VK_LEFT)){
+			if(player[0]!=1)
+				dx=-1;
+		}
+		if(KEY_DOWN(VK_DOWN)){
+			if(player[1]!=Y-2)
+				dy=1;
+		}
+		if(KEY_DOWN(VK_RIGHT)){
+			if(player[0]!=X-2)
+				dx=1;
+		}
+		if(maze[player[0]+dx][player[1]+dy]==0) continue;
+		if(dx==0&&dy==0) continue;
+		output(player[0],player[1],pic[1]);
+		player[0]+=dx;
+		player[1]+=dy;
+		output(player[0],player[1],pic[2]);
+		if(player[0]==X-2&&player[1]==Y-2){
+			output(0,Y,"win!!!");
+			Sleep(5000);
+			system("cls");
+			return;
 		}
 		Sleep(10);
 	}
@@ -110,9 +109,7 @@ int main(){
 	while(1){
 		printf("press space to start a new game\n");
 		while(!(_kbhit()&&_getch()==32)) Sleep(50);
-		int X=21,Y=21;
-		get_new_maze(X,Y);
-		start(X,Y);
+		start();
 	}
 	return 0;
 }
