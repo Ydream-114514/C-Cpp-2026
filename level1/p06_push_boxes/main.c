@@ -172,9 +172,11 @@ int start(int *level){
 		}
 		end:
 		if(win(X,Y)){
+			int score=calc(steps,min_steps);
+			level_score[*level]=max(level_score[*level],score);
 			output(0,Y,"win!!!                                          ");
 			output(0,Y+2,"your score: ");
-			output(12,Y+2,calc(steps,min_steps));
+			output(12,Y+2,score);
 			output(0,Y+3,"press any key to continue");
 			Sleep(500);
 			if(*level<TOT) level_open[*level++]=1;

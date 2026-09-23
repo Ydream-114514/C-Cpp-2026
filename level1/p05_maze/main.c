@@ -73,21 +73,25 @@ void start(){
 	int player[]={1,1};
 	while(1){
 		int dx=0,dy=0;
-		if(KEY_DOWN(VK_UP)){
-			if(player[1]!=1)
-				dy=-1;
-		}
-		if(KEY_DOWN(VK_LEFT)){
-			if(player[0]!=1)
-				dx=-1;
-		}
-		if(KEY_DOWN(VK_DOWN)){
-			if(player[1]!=Y-2)
-				dy=1;
-		}
-		if(KEY_DOWN(VK_RIGHT)){
-			if(player[0]!=X-2)
-				dx=1;
+		switch(_getch()){
+			case 119://w
+				if(player[1]!=1) dy=-1;
+				else continue;
+				break;
+			case 97://a
+				if(player[0]!=1) dx=-1;
+				else continue;
+				break;
+			case 115://s
+				if(player[1]!=Y-2) dy=1;
+				else continue;
+				break;
+			case 100://d
+				if(player[0]!=X-2) dx=1;
+				else continue;
+				break;
+			default:
+				continue;
 		}
 		if(maze[player[0]+dx][player[1]+dy]==0) continue;
 		if(dx==0&&dy==0) continue;
