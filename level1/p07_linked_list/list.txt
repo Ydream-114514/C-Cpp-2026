@@ -1,0 +1,10 @@
+9
+Fairy 1
+PAIMON 1
+Segment_tree 114514
+box 998244353
+ikun 25
+int 2147483647
+nailong 18
+robot 10
+token 10000000000000
