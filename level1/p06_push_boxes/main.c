@@ -30,9 +30,12 @@ void output(int x,int y,const char *s){
 	Setpos(x,y);
 	printf("%s",s);
 }
-void output(int x,int y,int n){
+void output1(int x,int y,int n){
 	Setpos(x,y);
 	printf("%d",n);
+}
+int Max(int a,int b){
+	return a>b?a:b;
 }
 void read_data(){
 	if(!freopen("level/data","r",stdin)){
@@ -122,7 +125,7 @@ int start(int *level){
 			output(i,j,pic[maze[i][j]]);
 	output(0,Y,"press w/a/s/d to move, r to restart, esc to exit");
 	output(0,Y+1,"steps: ");
-	output(7,Y+1,steps);
+	output1(7,Y+1,steps);
 	int player[]={px,py};
 	while(1){
 		if(_kbhit()){
@@ -158,6 +161,7 @@ int start(int *level){
 				if(_maze[player[0]+dx*i][player[1]+dy*i]==_WALL) goto end;
 				i++;
 			}
+			if(i>2) goto end;
 			_maze[player[0]+dx*i][player[1]+dy*i]=_BOX;
 			output(player[0]+dx*i,player[1]+dy*i,pic[_BOX]);
 			_maze[player[0]+dx][player[1]+dy]=_PLAYER;
@@ -168,15 +172,15 @@ int start(int *level){
 			player[0]+=dx;
 			player[1]+=dy;
 			steps++;
-			output(7,Y+1,steps);
+			output1(7,Y+1,steps);
 		}
 		end:
 		if(win(X,Y)){
 			int score=calc(steps,min_steps);
-			level_score[*level]=max(level_score[*level],score);
+			level_score[*level]=Max(level_score[*level],score);
 			output(0,Y,"win!!!                                          ");
 			output(0,Y+2,"your score: ");
-			output(12,Y+2,score);
+			output1(12,Y+2,score);
 			output(0,Y+3,"press any key to continue");
 			Sleep(500);
 			if(*level<TOT) level_open[*level++]=1;
