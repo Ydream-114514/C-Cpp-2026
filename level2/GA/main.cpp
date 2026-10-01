@@ -3,17 +3,16 @@
 using namespace std;
 
 const int maxn = 310;
-const int h=21,w=21;
-const int POP_SIZE   = 200;    // 种群大小
+const int h=41,w=61;
+const int POP_SIZE   = 100;    // 种群大小
 const double CROSS_RATE = 0.8; // 交叉率
 const double MUT_RATE   = 0.01; // 变异率
-const int MAX_GEN    = 500;    // 最大代数
+const int MAX_GEN    = 5000;    // 最大代数
 const int TOURNAMENT_K = 3;   // 锦标赛选择规模
 const int MAX_LEN = 10*h*w;
 
 int dx[]={0,1,0,-1},dy[]={1,0,-1,0};
 int maze[maxn][maxn],fits[maxn][maxn];
-
 
 random_device rd;
 mt19937 gen(rd());
@@ -21,76 +20,6 @@ uniform_int_distribution<> bit_dist(0, 3);
 uniform_int_distribution<> path_length(h+w-3, MAX_LEN);
 uniform_real_distribution<> prob_dist(0.0, 1.0);
 
-// void dfs(int x,int y){
-// 	maze[x][y]=1;
-//     vector<int> dirs({0,1,2,3});
-//     shuffle(dirs.begin(),dirs.end(),gen);
-// 	for(auto i:dirs){
-// 		int tx=x+dx[i]*2,ty=y+dy[i]*2;
-// 		if(0<=tx&&tx<h-1&&0<=ty&&ty<w-1&&!maze[tx][ty]){
-// 			maze[x+dx[i]][y+dy[i]]=1;
-// 			dfs(tx,ty);
-// 		}
-// 	}
-// }
-// void get_new_maze(){
-// 	memset(maze,0,sizeof(maze));
-// 	dfs(1,1);
-// 	// 随机打通约 10% 的内部墙
-// 	for(int i = 1; i < h-1; ++i)
-// 		for(int j = 1; j < w-1; ++j)
-// 			if(maze[i][j] == 0 && prob_dist(gen) < 0.1)
-// 				maze[i][j] = 1;
-// 	maze[1][1]=2;
-// 	maze[h-2][w-2]=3;
-// }
-// void get_prim_maze() {
-//     memset(maze, 0, sizeof(maze));
-
-//     // 待扩展的候选格子 (x, y, 来向方向)
-//     struct Node { int x, y, dir; };
-//     vector<Node> frontier;
-
-//     // 从 (1,1) 开始
-//     maze[1][1] = 1;
-//     for (int d = 0; d < 4; ++d) {
-//         int nx = 1 + dx[d] * 2;
-//         int ny = 1 + dy[d] * 2;
-//         if (0 <= nx && nx < h - 1 && 0 <= ny && ny < w - 1 && !maze[nx][ny])
-//             frontier.push_back({nx, ny, d});
-//     }
-
-//     while (!frontier.empty()) {
-//         uniform_int_distribution<> idx_dist(0, (int)frontier.size() - 1);
-//         int id = idx_dist(gen);
-//         Node cur = frontier[id];
-//         frontier.erase(frontier.begin() + id);
-
-//         if (maze[cur.x][cur.y]) continue;
-
-//         // 打通中间的墙
-//         int mx = cur.x - dx[cur.dir];
-//         int my = cur.y - dy[cur.dir];
-//         maze[mx][my] = 1;
-//         maze[cur.x][cur.y] = 1;
-
-//         // 加入新的边界格子
-//         vector<int> dirs({0, 1, 2, 3});
-//         shuffle(dirs.begin(), dirs.end(), gen);
-//         for (auto d : dirs) {
-//             int nx = cur.x + dx[d] * 2;
-//             int ny = cur.y + dy[d] * 2;
-//             if (0 <= nx && nx < h - 1 && 0 <= ny && ny < w - 1 && !maze[nx][ny])
-//                 frontier.push_back({nx, ny, d});
-//         }
-//     }
-
-//     maze[1][1] = 2;
-//     maze[h - 2][w - 2] = 3;
-// }
-// 递归分割生成迷宫
-// 坐标约定：r 为行，c 为列
-// 奇数坐标 (1,3,5,...) 是通路，偶数坐标 (2,4,6,...) 是墙
 void divide(int r1, int c1, int r2, int c2) {
     // 区域太小，停止分割
     if (r2 - r1 < 2 || c2 - c1 < 2) return;
@@ -188,8 +117,6 @@ void bfs(){
 	}
 }
 void Init_maze(){
-	// get_new_maze();
-	// get_prim_maze();
 	get_recursive_division_maze();
 	bfs();
 }
@@ -199,12 +126,6 @@ typedef vector<int> Ind;
 Ind init_Ind(){
     Ind a(path_length(gen));
 	int lst=-1;
-	/*
-	dx:0 1 0 -1
-	dy:1 0 -1 0
-	 3
-	210
-	*/
     for(auto &it:a){
 		do{
 			it=bit_dist(gen);
@@ -215,7 +136,7 @@ Ind init_Ind(){
 }
 
 int fitness(const Ind &a){
-	int x=1,y=1,score=10000,step=0;
+	int x=1,y=1,score=100000,step=0;
 	for(const auto &it:a){
 		int tx=x+dx[it],ty=y+dy[it];
 		if(0<=tx&&tx<h-1&&0<=ty&&ty<w-1&&maze[tx][ty]) x=tx,y=ty,step++;
@@ -223,7 +144,7 @@ int fitness(const Ind &a){
 			break;
 		}
 		if(maze[x][y]==3){
-			score+=50000;
+			score+=500000;
 			break;
 		}
 		if(maze[x][y]==2) score-=10;
@@ -287,6 +208,17 @@ void print(const Ind &p){
 	putchar('\n');
 }
 
+bool check(const Ind &a){
+    int x=1,y=1;
+	for(const auto &it:a){
+		int tx=x+dx[it],ty=y+dy[it];
+		if(0<=tx&&tx<h-1&&0<=ty&&ty<w-1&&maze[tx][ty]) x=tx,y=ty;
+		else return 0;
+		if(maze[x][y]==3) return 1;
+	}
+    return 0;
+}
+
 int main(){
 	SetConsoleOutputCP(CP_UTF8);
 	clock_t start = clock();
@@ -298,8 +230,11 @@ int main(){
 
     Ind global_best;
     int global_best_fit = -1;
-
-    for (int gen_id = 0; gen_id < MAX_GEN; ++gen_id) {
+    int gen_id = 0;
+    cout<<"初始迷宫：" << endl;
+    print(Ind());
+    cout<<"初始种群评估中..." << endl;
+    for (;!(check(global_best) || gen_id + 1 >= MAX_GEN); ++gen_id) {
         // 评估当前种群
         vector<int> fits(POP_SIZE);
         for (int i = 0; i < POP_SIZE; ++i) {
@@ -343,13 +278,12 @@ int main(){
         }
 
         pop = move(new_pop);
-		if(gen_id%50==0){
-			cout<<"代数："<<gen_id<<endl;
+		if((gen_id+1)%50==0){
+			cout<<"代数："<<gen_id+1<<endl;
 			cout << "适应度：" << global_best_fit << endl;
 			print(global_best);
 		}
     }
-
     // 最后再评估一次，更新历史最优
     vector<int> fits(POP_SIZE);
     for (int i = 0; i < POP_SIZE; ++i) {
@@ -363,6 +297,8 @@ int main(){
     }
 
     double elapsed_ms = (double)(clock() - start) / CLOCKS_PER_SEC * 1000.0;
+    cout << "达到终止条件，停止进化。" << endl;
+    cout<<"总代数：" << gen_id + 1 << endl;
     cout << "最优解: " << endl;
 	if (global_best.empty()) {
 		cout << "未找到有效路径。" << endl;
