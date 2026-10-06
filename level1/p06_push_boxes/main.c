@@ -183,7 +183,7 @@ int start(int *level){
 			output1(12,Y+2,score);
 			output(0,Y+3,"press any key to continue");
 			Sleep(500);
-			if(*level<TOT) level_open[*level++]=1;
+			if(*level<TOT) level_open[(*level)++]=1;
 			_getch();
 			system("cls");
 			return 0;
