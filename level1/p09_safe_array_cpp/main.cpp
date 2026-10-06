@@ -20,7 +20,8 @@ public:
     Array& operator=(const Array&) = delete;
     void push_back(T val){
         if(n==cap){
-            cap=ceil(cap*1.2);
+            if(cap==0) cap=1;
+            cap=ceil(cap*1.2)+1;
             T* tmp=new T[cap];
             for(size_t i=0;i<n;++i)
                 tmp[i]=move(a[i]);
