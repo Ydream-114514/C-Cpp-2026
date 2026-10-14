@@ -12,7 +12,8 @@ int main(){
         int n;
         printf(">>>");
         scanf("%d",&n);
-        if(check(n)) printf("Number %d is prime\n",n);
+        if(n<=0) printf("Wrong!!!\n");
+        else if(check(n)) printf("Number %d is prime\n",n);
         else printf("Number %d is not prime\n",n);
     }
     

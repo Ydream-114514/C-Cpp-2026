@@ -10,7 +10,7 @@
 #define _BOX 3
 #define _TARGET 4
 int maze[height][width],_maze[height][width];
-int level_score[10],level_open[10],TOT,lv=1,w;
+int level_score[10],level_open[10],TOT,w;
 int dx[]={0,1,0,-1},dy[]={1,0,-1,0};
 char pic[][2]={"#"," ","P","O","X"};
 void Setpos(int x,int y){
@@ -38,31 +38,34 @@ int Max(int a,int b){
 	return a>b?a:b;
 }
 void read_data(){
-	if(!freopen("level/data","r",stdin)){
-		printf("data file not found, please check the file path\n");
+	FILE *Data=fopen("level/data","r");
+	if(!Data){
+		puts("data file not found, please check the file path");
 		Sleep(2000);
 		exit(0);
 	}else{
-		scanf("%d",&TOT);
-		fclose(stdin);
+		fscanf(Data,"%d",&TOT);
+		fclose(Data);
 	}
-	if(!freopen("players_data/data.txt","r",stdin)){
-		memset(level_open,0,sizeof(int)*10);
+	Data=fopen("players_data/data.txt","r");
+	if(!Data){
+		puts("level is not found.");
+		Sleep(2000);
+		exit(0);
 	}else{
-		for(int i=0;i<10;++i){
-			scanf("%d%d",&level_open[i],&level_score[i]);
+		for(int i=0;i<TOT;++i){
+			fscanf(Data,"%d%d",&level_open[i],&level_score[i]);
 		}
+		fclose(Data);
 	}
-	fclose(stdin);
-	freopen("CON","r",stdin);
 }
 int get_width(){
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int Width;
-    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
-        Width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    if(GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi)){
+        Width=csbi.srWindow.Right-csbi.srWindow.Left+1;
         return Width;
-    } else {
+    }else{
         printf("Failed to get console info.\n");
 		exit(0);
     }
@@ -86,11 +89,11 @@ void shuffle(int *arr, int n) {
 void get_new_maze(int level,int *X,int *Y,int *px,int *py,int *min_steps){
 	char s[15];
 	sprintf(s,"level/level%d.txt",level);
-	freopen(s,"r",stdin);
-	scanf("%d %d %d",Y,X,min_steps);
+	FILE *Map=fopen(s,"r");
+	fscanf(Map,"%d %d %d",Y,X,min_steps);
 	for(int j=0;j<*X;++j){
 		for(int i=0;i<*Y;++i){
-			scanf("%d",&maze[i][j]);
+			fscanf(Map,"%d",&maze[i][j]);
 			_maze[i][j]=maze[i][j];
 			if(maze[i][j]==_PLAYER){
 				*px=i;
@@ -123,7 +126,7 @@ int start(int *level){
 	for(int i=0;i<X;++i)
 		for(int j=0;j<Y;++j)
 			output(i,j,pic[maze[i][j]]);
-	output(0,Y,"press w/a/s/d to move, r to restart, esc to exit");
+	output(0,Y,"press w/a/s/d to move, r to restart, ESC to exit");
 	output(0,Y+1,"steps: ");
 	output1(7,Y+1,steps);
 	int player[]={px,py};
@@ -236,13 +239,13 @@ void choose_level(int *lv){
 	}
 }
 void EXIT(){
-	freopen("players_data/data.txt","w",stdout);
+	FILE *Data=fopen("players_data/data.txt","w");
 	for(int i=0;i<TOT;++i)
-		printf("%d %d ",level_open[i],level_score[i]);
-	fclose(stdout);
+		fprintf(Data,"%d %d ",level_open[i],level_score[i]);
+	fclose(Data);
 	exit(0);
 }
-void menu(){
+void menu(int *lv){
 	system("cls");
 	int pos=0;
 	output(w/2-7,0," start game ");
@@ -273,10 +276,10 @@ void menu(){
 					break;
 				case 13://enter
 					if(pos==0){
-						while(start(&lv));
+						while(start(lv));
 						return;
 					}else if(pos==1){
-						choose_level(&lv);
+						choose_level(lv);
 						return;
 					}else{
 						system("cls");
@@ -291,8 +294,9 @@ void menu(){
 }
 int main(){
 	Init();
+	int lv=0;
 	while(1){
-		menu();
+		menu(&lv);
 	}
 	return 0;
 }

@@ -1,77 +1,112 @@
-#include<bits/stdc++.h>
-using namespace std;
-struct Node{
+#include<stdio.h>
+#include<stdlib.h>
+typedef struct Node{
 	int val;
-	Node *pos[2];
-	Node(int v=0):val(v),pos{nullptr,nullptr}{}
-};
-struct List{
-	Node *p[2];
-	bool op;
-	List():op(0){
-		p[0]=p[1]=nullptr;
+	struct Node *nxt;
+}Node;
+Node *new_Node(int val){
+	Node *tmp=(Node *)malloc(sizeof(Node));
+	if(tmp==NULL){
+		puts("Fail");
+		exit(0);
 	}
-	void Insert(int v){
-		Node *tmp=new Node(v);
-		if(!p[op]){
-			p[op]=tmp;
-			p[op^1]=tmp;
-		}else{
-			p[op^1]->pos[op^1]=tmp;
-			tmp->pos[op]=p[op^1];
-			p[op^1]=tmp;
-		}
+	tmp->val=val;
+	tmp->nxt=NULL;
+	return tmp;
+}
+typedef struct{
+	Node *head;
+}List;
+List *new_List(){
+	List *tmp=(List *)malloc(sizeof(List));
+	if(tmp==NULL){
+		puts("Fail");
+		exit(0);
 	}
-	void Reverse(){
-		op^=1;
+	tmp->head=NULL;
+	return tmp;
+}
+void Append(List *lis,int v){
+	if(lis->head==NULL){
+		lis->head=new_Node(v);
+		return;
 	}
-	int Find(int v){
-		Node *pos=p[op];
-		int cnt=0;
-		while(pos){
-			if(pos->val==v) return cnt;
-			pos=pos->pos[op^1];
-			cnt++;
-		}
-		return -1;
+	Node *tmp=lis->head;
+	while(tmp->nxt!=NULL) tmp=tmp->nxt;
+	tmp->nxt=new_Node(v);
+}
+void Reverse(List *lis){
+	Node *p=lis->head,*p_front=NULL,*p_nxt=lis->head->nxt;
+	while(p_nxt!=NULL){
+		p->nxt=p_front;
+		p_front=p;
+		p=p_nxt;
+		p_nxt=p_nxt->nxt;
 	}
-	int Find_next(int v){
-		Node *pos=p[op];
-		int cnt=0,t=1;
-		while(pos){
-			if(pos->val==v){
-				if(t) t=0;
-				else return cnt;
-			}
-			pos=pos->pos[op^1];
-			cnt++;
-		}
-		return -1;
+	p->nxt=p_front;
+	lis->head=p;
+}
+int Find_value(List *lis,int v){
+	Node *tmp=lis->head;
+	int cnt=0;
+	while(tmp!=NULL&&tmp->val!=v) tmp=tmp->nxt,++cnt;
+	return tmp?cnt:-1;
+}
+int Find_next(List *lis,int v){
+	Node *tmp=lis->head;
+	int cnt=0;
+	while(tmp!=NULL&&tmp->val!=v) tmp=tmp->nxt,++cnt;
+	tmp=tmp->nxt;
+	while(tmp!=NULL&&tmp->val!=v) tmp=tmp->nxt,++cnt;
+	return tmp?cnt:-1;
+}
+void Print(List *lis){
+	Node *tmp=lis->head;
+	while(tmp!=NULL){
+		printf("%d ",tmp->val);
+		tmp=tmp->nxt;
 	}
-	void Print(){
-		Node *pos=p[op];
-		while(pos){
-			printf("%d ",pos->val);
-			pos=pos->pos[op^1];
-		}
-		printf("\n");
+	puts("");
+}
+void Del(List *lis){
+	if(lis->head==NULL){
+		puts("Wrong!!!");
+		exit(0);
 	}
-	void Del(){
-		p[op^1]->pos[op^1]=nullptr;
-		free(p[op^1]);
+	if(lis->head->nxt==NULL){
+		free(lis->head);
+		lis->head=NULL;
+		return;
 	}
-};
+	Node *tmp=lis->head;
+	while(tmp->nxt->nxt!=NULL) tmp=tmp->nxt;
+	free(tmp->nxt);
+}
+void Delete(List *lis){
+	Node *tmp=lis->head,*p=NULL;
+	while(tmp->nxt->nxt!=NULL){
+		p=tmp->nxt;
+		free(tmp);
+		tmp=p;
+	}
+	lis->head=NULL;
+}
 int main(){
-	srand(time(0));
-	List x;
+	List *x=new_List();
 	for(int i=0;i<10;++i)
-		x.Insert(rand()%10);
-	x.Print();
-	x.Reverse();
-	x.Print();
-	int p=x.Find(5);
+		Append(x,i);
+	Print(x);
+	Reverse(x);
+	Print(x);
+	Append(x,11);
+	Print(x);
+	Reverse(x);
+	Print(x);
+	int p=Find_value(x,5);
 	printf("Find 5: %d\n",p);
-	int q=x.Find_next(5);
+	int q=Find_next(x,5);
 	printf("Find next 5: %d\n",q);
+	Delete(x);
+	system("pause");
 	return 0;
 }

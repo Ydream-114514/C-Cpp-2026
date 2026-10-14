@@ -12,7 +12,7 @@ mt19937 gen(random_device{}());
 const int h=8,w=8;
 const vector<int> layer_sizes={h*w,96,32,10};
 const int L=layer_sizes.size()-1;
-const int epochs=200;
+const int epochs=20000;
 const float p=0.1;
 
 uint32_t read_big_endian(ifstream& file) {
