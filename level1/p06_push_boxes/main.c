@@ -87,9 +87,13 @@ void shuffle(int *arr, int n) {
     }
 }
 void get_new_maze(int level,int *X,int *Y,int *px,int *py,int *min_steps){
-	char s[15];
-	sprintf(s,"level/level%d.txt",level);
+	char s[64];
+	snprintf(s,sizeof(s),"level/level%d.txt",level);
 	FILE *Map=fopen(s,"r");
+	if(!Map){
+        fprintf(stderr,"cannot open %s\n",s);
+        exit(1);
+    }
 	fscanf(Map,"%d %d %d",Y,X,min_steps);
 	for(int j=0;j<*X;++j){
 		for(int i=0;i<*Y;++i){
@@ -103,8 +107,6 @@ void get_new_maze(int level,int *X,int *Y,int *px,int *py,int *min_steps){
 			}
 		}
 	}
-	fclose(stdin);
-	freopen("CON","r",stdin);
 }
 int win(int X,int Y){
 	for(int i=0;i<X;++i){
@@ -186,7 +188,7 @@ int start(int *level){
 			output1(12,Y+2,score);
 			output(0,Y+3,"press any key to continue");
 			Sleep(500);
-			if(*level<TOT) level_open[(*level)++]=1;
+			if(*level!=TOT-1) level_open[(*level)++]=1;
 			_getch();
 			system("cls");
 			return 0;

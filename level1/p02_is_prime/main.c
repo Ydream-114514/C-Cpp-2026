@@ -1,6 +1,6 @@
 #include<stdio.h>
 int check(int n){
-    if(n==1) return 0;
+    if(n<=1) return 0;
     if(n==2) return 1;
     for(int i=2;i*i<=n;++i)
         if(n%i==0)
@@ -8,13 +8,13 @@ int check(int n){
     return 1;
 }
 int main(){
-    while(1){
-        int n;
-        printf(">>>");
-        scanf("%d",&n);
+    int n;
+    printf(">>>");
+    while(~scanf("%d",&n)){
         if(n<=0) printf("Wrong!!!\n");
         else if(check(n)) printf("Number %d is prime\n",n);
         else printf("Number %d is not prime\n",n);
+        printf(">>>");
     }
     
     return 0;

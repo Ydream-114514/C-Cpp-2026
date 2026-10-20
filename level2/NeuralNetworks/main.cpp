@@ -82,18 +82,21 @@ void load_mnist_8x8(const string& image_path, const string& label_path,
     labels.reserve(num_labels);
 
     vector<uint8_t> buffer(rows*cols);
-
-    for (uint32_t i=0; i<num_images;++i) {
-        // 读取一张28x28的原始图像
-        img_file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
-        // 降采样并二值化
-        images.push_back(downsample_and_binarize(buffer));
-        // 读取对应的标签
-        uint8_t label;
-        lbl_file.read(reinterpret_cast<char*>(&label), 1);
-        labels.push_back(static_cast<int>(label));
+    try{
+        for (uint32_t i=0; i<num_images;++i) {
+            // 读取一张28x28的原始图像
+            img_file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+            // 降采样并二值化
+            images.push_back(downsample_and_binarize(buffer));
+            // 读取对应的标签
+            uint8_t label;
+            lbl_file.read(reinterpret_cast<char*>(&label), 1);
+            labels.push_back(static_cast<int>(label));
+        }
+    }catch(...){
+        cerr<<"fail to load model"<<endl;
+        exit(-1);
     }
-
     cout<<"加载完成: "<<images.size()<<" 张图像, "<<labels.size()<<" 个标签"<<endl;
 }
 
@@ -115,22 +118,29 @@ void load_optdigits(const string& filename,vector<Matrix> &X,vector<Matrix> &Y) 
         cerr<<"无法打开文件: "<<filename<<endl;
         return;
     }
-    string line;
-    while (getline(file, line)) {
-        stringstream ss(line);
-        string value;
-        Matrix x=new_matrix(1,h*w),y=new_matrix(1,10);
-        for (int i=0; i<64; ++i) {
+    try{
+        string line;
+        X.clear();
+        Y.clear();
+        while (getline(file, line)) {
+            stringstream ss(line);
+            string value;
+            Matrix x=new_matrix(1,h*w),y=new_matrix(1,10);
+            for (int i=0; i<64; ++i) {
+                getline(ss, value, ',');
+                // x[0][i]=stoi(value)>8?1.f:0.f;
+                x[0][i]=stoi(value)/16.f;
+            }
+            X.push_back(x);
             getline(ss, value, ',');
-            // x[0][i]=stoi(value)>8?1.f:0.f;
-            x[0][i]=stoi(value)/16.f;
+            y[0][stoi(value)]=1;
+            Y.push_back(y);
         }
-        X.push_back(x);
-        getline(ss, value, ',');
-        y[0][stoi(value)]=1;
-        Y.push_back(y);
+        file.close();
+    }catch(...){
+        cerr<<"fail to load model"<<endl;
+        exit(-1);
     }
-    file.close();
     cout<<"Optdigits 加载完成: "<<X.size()<<" 个样本"<<endl;
 }
 
