@@ -36,6 +36,7 @@ void Append(List *lis,int v){
 	tmp->nxt=new_Node(v);
 }
 void Reverse(List *lis){
+	if(lis->head==NULL) return;
 	Node *p=lis->head,*p_front=NULL,*p_nxt=lis->head->nxt;
 	while(p_nxt!=NULL){
 		p->nxt=p_front;
@@ -56,7 +57,8 @@ int Find_next(List *lis,int v){
 	Node *tmp=lis->head;
 	int cnt=0;
 	while(tmp!=NULL&&tmp->val!=v) tmp=tmp->nxt,++cnt;
-	tmp=tmp->nxt;
+	if(tmp==NULL) return -1;
+	tmp=tmp->nxt;++cnt;
 	while(tmp!=NULL&&tmp->val!=v) tmp=tmp->nxt,++cnt;
 	return tmp?cnt:-1;
 }
@@ -83,6 +85,7 @@ void Del(List *lis){
 	free(tmp->nxt);
 }
 void Delete(List *lis){
+	if(lis->head==NULL) return;
 	Node *tmp=lis->head,*p=NULL;
 	while(tmp->nxt->nxt!=NULL){
 		p=tmp->nxt;
@@ -98,7 +101,7 @@ int main(){
 	Print(x);
 	Reverse(x);
 	Print(x);
-	Append(x,11);
+	Append(x,5);
 	Print(x);
 	Reverse(x);
 	Print(x);

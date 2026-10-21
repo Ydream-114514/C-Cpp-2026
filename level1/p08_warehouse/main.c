@@ -93,7 +93,7 @@ void Exit(){
 }
 void show_list(){
 	size_t nl=0,cl=0;
-	for(const auto &p : st){
+	for(const auto &p:st){
 		nl=max(nl,p.first.length());
 		cl=max(cl,p.second.length());
 	}

@@ -10,7 +10,17 @@ ll res[maxn];
 char ss[maxn]="1415926";
 int n;
 int main(){
-	scanf("%d",&n);
+	while(~scanf("%d",&n)){
+		if(n<0){
+			puts("Wrong!!!");
+			continue;
+		}
+		if(n>40000*8){
+			puts("out of range");
+			continue;
+		}
+		break;
+	}
 	n++;
 	auto t1 = high_resolution_clock::now();
 	int len=10*(n+10)/3+10,N=(n+k-1)/k;
