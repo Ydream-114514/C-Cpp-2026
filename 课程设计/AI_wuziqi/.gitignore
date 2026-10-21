@@ -1,0 +1,32 @@
+# Compiled binaries and intermediate files
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.pdb
+*.ilk
+*.pch
+*.gch
+
+# Build output directories
+build/
+cmake-build-*/
+Debug/
+Release/
+x64/
+x86/
+
+# IDE and editor files
+.vs/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+.vscode/
+
+# OS-generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
