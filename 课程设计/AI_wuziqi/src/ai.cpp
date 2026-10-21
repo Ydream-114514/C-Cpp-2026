@@ -36,7 +36,7 @@ Action AI::turn(const vector<vector<int>> &board)const{
 }
 bool AI::check_model(const vector<vector<int>> &mp,const int &r,const int &c,const int &dr,const int &dc,const int *_model,int color,bool rev)const{
     int len=_model[0];
-    if(in(r+len*dr,c+len*dc)){
+    if(in(r+(len-1)*dr,c+(len-1)*dc)){
         if(rev){
             for(int i=0;i<len;++i)
                 if(mp[r+i*dr][c+i*dc]!=_model[len-i]*color)

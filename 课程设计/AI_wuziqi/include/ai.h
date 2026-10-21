@@ -4,7 +4,7 @@
 class AI : public Qishou,public enable_shared_from_this<AI>{
     mutable future<Action> future_;
     mutable bool thinking_ = false;
-    int depth=6,pace=2;
+    int depth=4,pace=2;
     int K=30;
 public:
     AI(int row,int col,int color,string name):Qishou(row,col,color,name){}

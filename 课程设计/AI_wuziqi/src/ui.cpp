@@ -34,7 +34,7 @@ void DrawStone(Vector2 c, float r, bool isBlack) {
     if(isBlack) DrawCircleGradient(c,r,Color{60,60,60,255},Color{10,10,10,255});
     else DrawCircleGradient(c,r,Color{255,255,255,255},Color{205,205,205,255});
     // 3. 高光（左上偏移）
-    DrawCircleV({c.x-r*0.35f,c.y-r*0.35f},r*0.28f,isBlack?Color{180,180,180,120}:Color{255,255,255,240});
+    // DrawCircleV({c.x-r*0.35f,c.y-r*0.35f},r*0.28f,isBlack?Color{180,180,180,120}:Color{255,255,255,240});
 }
 void printBoard(GameState &g){
     // 画横线和竖线
