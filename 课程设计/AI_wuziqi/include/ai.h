@@ -1,11 +1,12 @@
 #pragma once
 #include "common.h"
 #include "qishou.h"
+
 class AI : public Qishou,public enable_shared_from_this<AI>{
     mutable future<Action> future_;
     mutable bool thinking_ = false;
-    int depth=4,pace=2;
-    int K=30;
+    int depth=6,pace=2;
+    int K=40;
 public:
     AI(int row,int col,int color,string name):Qishou(row,col,color,name){}
     bool isThinking()const override{return thinking_;}
@@ -20,4 +21,9 @@ private:
     Action a_b_search(const vector<vector<int>>&)const;
     Action search(vector<vector<int>>&)const;
     Action computeMove(vector<vector<int>>)const;
+    Action suansha(vector<vector<int>>&,int)const;
+    Action check_one_step_kill(const vector<vector<int>>&,int)const;
+    Action check_two_steps_kill(vector<vector<int>>&,int)const;
 };
+
+bool checkWin(const vector<vector<int>>&,int,int,int);

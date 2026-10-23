@@ -60,7 +60,7 @@ void printBoard(GameState &g){
     }
     if(g.lastr>=0){
         Vector2 p=BoardToScreen(g.lastr,g.lastc);
-        DrawCircleLines(p.x,p.y,CELL_SIZE*0.45,RED);
+        DrawCircleV(p,CELL_SIZE*0.1f,RED);
     }
     DrawText(("Your color is "+(string)(g.color[0]==Chess_Color_BLACK?"BLACK":"WHITE")).c_str(), MARGIN_LEFT, WIN_H - 90, 20, DARKGRAY);
     DrawText(("It's "+g.p[g.turn]->name+"'s turn.").c_str(), MARGIN_LEFT, WIN_H - 60, 20, DARKGRAY);

@@ -17,13 +17,6 @@ extern mt19937 rng;
 int randInt(int,int);
 bool rand_float(double);
 typedef double Score_type;
-const Score_type Win_score     =1e8;
-const Score_type Full_Four     =1e6;
-const Score_type Not_Full_Four =1e5;
-const Score_type Full_Three    =1e4;
-const Score_type Not_Full_Three=1e3;
-const Score_type Full_Two      =1e2;
-const Score_type Not_Full_Two  =10;
 
 enum ActionType{
     ACT_MOVE,
