@@ -56,17 +56,17 @@ bool AI::check_model(const vector<vector<int>> &mp,const int &r,const int &c,con
     }
     return 0;
 }
+bool AI::patternScore(int cnt,int lcnt,int rcnt)const{
+    if(cnt>=5) return Win_score;
+    switch(cnt){
+        case 4:return (lcnt&&rcnt)?Full_Four:Not_Full_Four;
+        case 3:return (lcnt>=2&&rcnt>=1)||(lcnt>=1&&rcnt>=2)?Full_Three:Not_Full_Three;
+        case 2:return (lcnt+rcnt>=3)?Full_Two:Not_Full_Two;
+        default:return 0;
+    }
+};
 Score_type AI::calc(const vector<vector<int>>& mp,int color)const{
     Score_type score=0;
-    auto patternScore=[&](int cnt,int lcnt,int rcnt) -> Score_type {
-        if(cnt>=5) return Win_score;
-        switch(cnt){
-            case 4:return (lcnt&&rcnt)?Full_Four:Not_Full_Four;
-            case 3:return (lcnt>=1&&rcnt>=1)?Full_Three:Not_Full_Three;
-            case 2:return (lcnt+rcnt>=3)?Full_Two:Not_Full_Two;
-            default:return 0;
-        }
-    };
     for(const auto& [dr,dc]:dirs)
         for(int r=0;r<row;++r)
             for(int c=0;c<col;++c){
@@ -105,6 +105,32 @@ Score_type AI::get_score(const vector<vector<int>>&mp)const{
     if(score2>=Win_score) return -Win_score;
     return score1-score2*1.2f;
 }
+Score_type AI::local_score(const vector<vector<int>>&mp,int r,int c,int me)const{
+    Score_type total=0;
+    for(auto& [dr,dc]:dirs){
+        int cnt=1,lcnt=0,rcnt=0;
+        for(int s=1;s<=4;++s){
+            int nr=r+dr*s,nc=c+dc*s;
+            if(!in(nr,nc)) break;
+            if(mp[nr][nc]==me) ++cnt;
+            else{
+                if(mp[nr][nc]==EMPTY) ++rcnt;
+                break;
+            }
+        }
+        for(int s=1;s<=4;++s){
+            int nr=r-dr*s,nc=c-dc*s;
+            if(!in(nr,nc)) break;
+            if(mp[nr][nc]==me) ++cnt;
+            else{
+                if(mp[nr][nc]==EMPTY) ++lcnt;
+                break;
+            }
+        }
+        total+=patternScore(cnt,lcnt,rcnt);
+    }
+    return total;
+}
 bool AI::check(const vector<vector<int>>&mp,int x,int y)const{
     if(mp[x][y]!=EMPTY) return 0;
     for(int k=-pace;k<=pace;++k)
@@ -113,39 +139,41 @@ bool AI::check(const vector<vector<int>>&mp,int x,int y)const{
                 return 1;
     return 0;
 }
-Action AI::Rand_step(const vector<vector<int>>&board)const{
-    vector<pair<int,int>> c;
-    for(int i=0;i<row;++i)
+vector<tuple<int,int,Score_type>> AI::collection(vector<vector<int>>&mp,int me,bool flag)const{
+    vector<tuple<int,int,Score_type>> st;
+     for(int i=0;i<row;++i)
         for(int j=0;j<col;++j)
-            if(check(board,i,j))
-                c.emplace_back(i,j);
-    auto [x,y]=c[randInt(0,c.size()-1)];
-    return{ACT_MOVE,x,y};
+            if(check(mp,i,j)){
+                mp[i][j]=me;
+                st.emplace_back(i,j,get_score(mp));
+                mp[i][j]=EMPTY;
+            }
+    int k=min(K,(int)st.size());
+    static const auto cmp1=[](const tuple<int,int,Score_type> &a,const tuple<int,int,Score_type> &b){
+        return get<2>(a)>get<2>(b);
+    };
+    static const auto cmp2=[](const tuple<int,int,Score_type> &a,const tuple<int,int,Score_type> &b){
+        return get<2>(a)<get<2>(b);
+    };
+    if(flag){
+        nth_element(st.begin(),st.begin()+k,st.end(),cmp1);
+        st.resize(k);
+        sort(st.begin(),st.end(),cmp1);
+    }else{
+        nth_element(st.begin(),st.begin()+k,st.end(),cmp2);
+        st.resize(k);
+        sort(st.begin(),st.end(),cmp2);
+    }
+    return st;
 }
 Score_type AI::alpha_beta(vector<vector<int>>&mp,Score_type alpha,Score_type beta,int dep,bool is_max)const{
     if(dep==depth) return get_score(mp);
-    vector<tuple<int,int,Score_type>> st;
+    int me=is_max?color:3-color;
+    auto st=collection(mp,me,is_max);
     if(is_max){
-        auto res=suansha(mp,color);
-        if(res.type!=ACT_JUMP) return Win_score-dep;
-        for(int i=0;i<row;++i)
-            for(int j=0;j<col;++j)
-                if(check(mp,i,j)){
-                    mp[i][j]=color;
-                    st.emplace_back(i,j,get_score(mp));
-                    mp[i][j]=EMPTY;
-                }
-        int k=min(K,(int)st.size());
-        static const auto cmp=[](const tuple<int,int,Score_type> &a,const tuple<int,int,Score_type> &b){
-            return get<2>(a)>get<2>(b);
-        };
-        nth_element(st.begin(),st.begin()+k,st.end(),cmp);
-        sort(st.begin(),st.begin()+k,cmp);
-        for(int l=0;l<k;++l){
-            int i,j;
-            tie(i,j,ignore)=st[l];
-            mp[i][j]=color;
-            if(checkWin(mp,i,j,color)){
+        for(auto [i,j,ignore]:st){
+            mp[i][j]=me;
+            if(checkWin(mp,i,j,me)){
                 mp[i][j]=EMPTY;
                 return Win_score-dep;
             }else alpha=max(alpha,alpha_beta(mp,alpha,beta,dep+1,0));
@@ -154,26 +182,9 @@ Score_type AI::alpha_beta(vector<vector<int>>&mp,Score_type alpha,Score_type bet
         }
         return alpha;
     }else{
-        auto res=suansha(mp,3-color);
-        if(res.type!=ACT_JUMP) return dep-Win_score;
-        for(int i=0;i<row;++i)
-            for(int j=0;j<col;++j)
-                if(check(mp,i,j)){
-                    mp[i][j]=3-color;
-                    st.emplace_back(i,j,get_score(mp));
-                    mp[i][j]=EMPTY;
-                }
-        int k=min(K,(int)st.size());
-        static const auto cmp=[](const tuple<int,int,Score_type> &a,const tuple<int,int,Score_type> &b){
-            return get<2>(a)<get<2>(b);
-        };
-        nth_element(st.begin(),st.begin()+k,st.end(),cmp);
-        sort(st.begin(),st.begin()+k,cmp);
-        for(int l=0;l<k;++l){
-            int i,j;
-            tie(i,j,ignore)=st[l];
-            mp[i][j]=3-color;
-            if(checkWin(mp,i,j,3-color)){
+        for(auto [i,j,ignore]:st){
+            mp[i][j]=me;
+            if(checkWin(mp,i,j,me)){
                 mp[i][j]=EMPTY;
                 return dep-Win_score;
             }else beta=min(beta,alpha_beta(mp,alpha,beta,dep+1,1));
@@ -185,23 +196,10 @@ Score_type AI::alpha_beta(vector<vector<int>>&mp,Score_type alpha,Score_type bet
 }
 Action AI::a_b_search(const vector<vector<int>>&board)const{
     auto mp=board;
-    vector<tuple<int,int,Score_type>> st;
-    for(int i=0;i<row;++i)
-        for(int j=0;j<col;++j)
-            if(check(mp,i,j)){
-                mp[i][j]=color;
-                st.emplace_back(i,j,get_score(mp));
-                mp[i][j]=EMPTY;
-            }
-    int k=min(K,(int)st.size());
-    nth_element(st.begin(),st.begin()+k,st.end(),
-    [](const tuple<int,int,Score_type> &a,const tuple<int,int,Score_type> &b){
-        return get<2>(a)>get<2>(b);
-    });
+    auto st=collection(mp,color,1);
     int x=-1,y=-1;
     Score_type max_score=-1e18;
-    for(int l=0,i,j;l<k;++l){
-        tie(i,j,ignore)=st[l];
+    for(auto [i,j,ignore]:st){
         mp[i][j]=color;
         if(checkWin(mp,i,j,color)){
             mp[i][j]=EMPTY;
@@ -211,8 +209,7 @@ Action AI::a_b_search(const vector<vector<int>>&board)const{
         mp[i][j]=EMPTY;
         if(score>max_score){
             max_score=score;
-            x=i;
-            y=j;
+            x=i;y=j;
         }
     }
     if(x==-1) return Rand_step(board);
@@ -221,7 +218,7 @@ Action AI::a_b_search(const vector<vector<int>>&board)const{
 Action AI::check_one_step_kill(const vector<vector<int>>&mp,int color)const{
     for(const auto &[dr,dc]:dirs)
         for(int r=0;r<row;++r)
-            for(int c=0;c<col;++c){
+            for(int c=0;c<col;++c)
                 for(int i=0;i<One_step_kill;++i){
                     if(check_model(mp,r,c,dr,dc,One_step_kill_model[i],color,0)){
                         int cnt=One_step_kill_model[i][One_step_kill_model[i][0]+1];
@@ -232,7 +229,6 @@ Action AI::check_one_step_kill(const vector<vector<int>>&mp,int color)const{
                         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
                     }
                 }
-            }
     return {ACT_JUMP,-1,-1};
 }
 Action AI::check_two_steps_kill(vector<vector<int>>&mp,int color)const{
@@ -261,7 +257,47 @@ Action AI::check_two_steps_kill(vector<vector<int>>&mp,int color)const{
             }
     return {ACT_JUMP,-1,-1};
 }
-Action AI::suansha(vector<vector<int>>&mp,int color)const{
+static const int vcf_model[][8]={
+    {5,0,1,1,1,0,0,4},
+    {5,1,0,1,0,1,1,3},
+    {5,0,0,1,1,1,0,1},
+    {5,0,1,0,1,1,0,2},
+    {5,0,1,1,0,1,0,3},
+    {5,1,0,0,1,1,1,2},
+};
+static const int vcf_size=12;
+Action AI::vcf(vector<vector<int>>&mp,int dep)const{
+    if(dep==0) return {ACT_JUMP,-1,-1};
+    auto res=check_one_step_kill(mp,color);
+    if(res.type!=EMPTY) return res;
+    for(auto &i:vcf_model)
+        for(auto &[dr,dc]:dirs)
+            for(int r=0;r<row;++r)
+                for(int c=0;c<row;++c)
+                    for(auto &it:{0,1})
+                        if(check_model(mp,r,c,dr,dc,i,color,it))
+                            for(auto &[j,k]:vector<pair<int,int>>{{6,7},{7,6}}){
+                                int mr=r+dr*i[j];
+                                int mc=c+dc*i[j];
+                                int yr=r+dr*i[k];
+                                int yc=c+dc*i[k];
+                                mp[mr][mc]=color;
+                                res=check_one_step_kill(mp,3-color);
+                                if(res.type!=ACT_JUMP){
+                                    mp[mr][mc]=EMPTY;
+                                    continue;
+                                }
+                                mp[yr][yc]=3-color;
+                                res=vcf(mp,dep-1);
+                                mp[mr][mc]=mp[yr][yc]=EMPTY;
+                                if(res.type!=ACT_JUMP) return res;
+                            }
+    return {ACT_JUMP,-1,-1};
+}
+Action AI::double_three(vector<vector<int>>&mp)const{
+    
+}
+Action AI::suansha(vector<vector<int>>&mp)const{
     auto res=check_one_step_kill(mp,color);
     if(res.type!=ACT_JUMP) return res;
     res=check_one_step_kill(mp,3-color);
@@ -269,25 +305,18 @@ Action AI::suansha(vector<vector<int>>&mp,int color)const{
     res=check_two_steps_kill(mp,color);
     if(res.type!=ACT_JUMP) return res;
     res=check_two_steps_kill(mp,3-color);
+    if(res.type!=ACT_JUMP) return res;
+    res=vcf(mp,8);
     if(res.type!=ACT_JUMP) return res;
     return {ACT_JUMP,-1,-1};
 }
 Action AI::search(vector<vector<int>>&mp)const{
-    cerr<<"start check my one_step_kill"<<endl;
-    auto res=check_one_step_kill(mp,color);
+    static int cnt=0;
+    cerr<<"cnt="<<++cnt<<endl;
+    cerr<<"start suansha"<<endl;
+    auto res=suansha(mp);
     if(res.type!=ACT_JUMP) return res;
-    cerr<<"not find my one_step_kill"<<endl;
-    cerr<<"start check duishou's one_step_kill"<<endl;
-    res=check_one_step_kill(mp,3-color);
-    if(res.type!=ACT_JUMP) return res;
-    cerr<<"not find duishou's one_step_kill"<<endl;
-    cerr<<"start check my two_steps_kill"<<endl;
-    res=check_two_steps_kill(mp,color);
-    if(res.type!=ACT_JUMP) return res;
-    cerr<<"not find my two_steps_kill"<<endl;
-    cerr<<"start check duishou's two_steps_kill"<<endl;
-    res=check_two_steps_kill(mp,3-color);
-    if(res.type!=ACT_JUMP) return res;
+    cerr<<"not find suansha"<<endl;
     cerr<<"start alpha_beta_search"<<endl;
     return a_b_search(mp);
 }
@@ -315,4 +344,13 @@ Action AI::computeMove(vector<vector<int>> board)const{
         // }
     }else if(cnt==1) return Rand_step(board);
     else return search(board);
+}
+Action AI::Rand_step(const vector<vector<int>>&board)const{
+    vector<pair<int,int>> c;
+    for(int i=0;i<row;++i)
+        for(int j=0;j<col;++j)
+            if(check(board,i,j))
+                c.emplace_back(i,j);
+    auto [x,y]=c[randInt(0,c.size()-1)];
+    return{ACT_MOVE,x,y};
 }
