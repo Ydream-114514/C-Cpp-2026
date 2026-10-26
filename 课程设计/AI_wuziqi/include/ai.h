@@ -24,8 +24,9 @@ private:
     Action a_b_search(const vector<vector<int>>&)const;
     Action search(vector<vector<int>>&)const;
     Action computeMove(vector<vector<int>>)const;
-    Action vcf(vector<vector<int>>&,int)const;
-    Action double_three(vector<vector<int>>&)const;
+    Action vcf(vector<vector<int>>&,int,int)const;
+    bool check_db_thr(vector<vector<int>>&,int,int,int)const;
+    Action double_three(vector<vector<int>>&,int)const;
     Action suansha(vector<vector<int>>&)const;
     Action check_one_step_kill(const vector<vector<int>>&,int)const;
     Action check_two_steps_kill(vector<vector<int>>&,int)const;
