@@ -5,8 +5,8 @@
 class AI : public Qishou,public enable_shared_from_this<AI>{
     mutable future<Action> future_;
     mutable bool thinking_ = false;
-    int depth=5,pace=2;
-    int K=20;
+    int depth=3,pace=2;
+    int K=2000;
 public:
     AI(int row,int col,int color,string name):Qishou(row,col,color,name){}
     bool isThinking()const override{return thinking_;}

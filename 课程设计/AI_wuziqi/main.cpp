@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "game.h"
+#include "player.h"
 
 int main(){
     InitWindow(WIN_W, WIN_H, "五子棋");
@@ -13,8 +14,8 @@ int main(){
             buttonHandled=1;
         }else if(!~g.gameOver&&IsButtonClicked(resignBtn)){
             cerr<<g.turn<<endl;
-            g.gameOver=g.turn^1;
-            g.score[g.turn^1]++;
+            g.gameOver=typeid(g.p[1]).name()==typeid(Player).name();
+            g.score[g.gameOver]++;
             buttonHandled=1;
         }
         if(!buttonHandled&&!~g.gameOver){

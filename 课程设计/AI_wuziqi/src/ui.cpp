@@ -64,16 +64,6 @@ void printBoard(GameState &g){
     }
     // DrawText(("Your color is "+(string)(g.color[0]==Chess_Color_BLACK?"BLACK":"WHITE")).c_str(), MARGIN_LEFT, WIN_H - 90, 20, DARKGRAY);
     // DrawText(("It's "+g.p[g.turn]->name+"'s turn.").c_str(), MARGIN_LEFT, WIN_H - 60, 20, DARKGRAY);
-    if(~g.gameOver){
-        switch(g.gameOver){
-            case 0:case 1:
-                DrawText((g.p[g.gameOver]->name+" win").c_str(), MARGIN_LEFT, WIN_H - 30, 20, DARKGRAY);
-                break;
-            case 2:
-                DrawText("pingju", MARGIN_LEFT, WIN_H - 30, 20, DARKGRAY);
-                break;
-        }
-    }
     DrawButton(restartBtn);
     DrawButton(resignBtn);
     //对局信息
@@ -91,6 +81,18 @@ void printBoard(GameState &g){
         }else{
             if(g.p[1]->isThinking())
                 Draw_text_align({g.p[1]->name+" is thinking...",{WIN_W/2+60,65},ORANGE,ALIGN_LEFT,ALIGN_CENTER,20});
+        }
+    }else{
+        switch(g.gameOver){
+            case 0:
+                Draw_text_align({g.p[0]->name+" win",{WIN_W/2-60-CELL_SIZE,65},RED,ALIGN_RIGHT,ALIGN_CENTER,20});
+                break;
+            case 1:
+                Draw_text_align({g.p[1]->name+" win",{WIN_W/2+60+CELL_SIZE,65},RED,ALIGN_LEFT,ALIGN_CENTER,20});
+                break;
+            case 2:
+                DrawText("pingju", MARGIN_LEFT, WIN_H - 30, 20, DARKGRAY);
+                break;
         }
     }
 }
