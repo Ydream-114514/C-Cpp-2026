@@ -6,7 +6,7 @@ class AI : public Qishou,public enable_shared_from_this<AI>{
     mutable future<Action> future_;
     mutable bool thinking_ = false;
     int depth=5,pace=2;
-    int K=15;
+    int K=20;
 public:
     AI(int row,int col,int color,string name):Qishou(row,col,color,name){}
     bool isThinking()const override{return thinking_;}
@@ -25,7 +25,7 @@ private:
     Action search(vector<vector<int>>&)const;
     Action computeMove(vector<vector<int>>)const;
     Action vcf(vector<vector<int>>&,int,int)const;
-    bool check_db_thr(vector<vector<int>>&,int,int,int)const;
+    bool check_db_thr(const vector<vector<int>>&,int,int,int)const;
     Action double_three(vector<vector<int>>&,int)const;
     Action suansha(vector<vector<int>>&)const;
     Action check_one_step_kill(const vector<vector<int>>&,int)const;
