@@ -11,6 +11,7 @@ struct GameState{
     int moveCount;
     int gameOver;
     shared_ptr<Qishou> p[2]={nullptr,nullptr};
+    stack<pair<int,int>> st;
 };
 
 bool checkWin(const vector<vector<int>>&,int,int,int);

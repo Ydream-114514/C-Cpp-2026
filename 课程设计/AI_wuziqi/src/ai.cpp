@@ -234,35 +234,35 @@ Action AI::check_two_steps_kill(vector<vector<int>>&mp,int color)const{
     for(const auto &[dr,dc]:dirs)
         for(int r=0;r<row;++r)
             for(int c=0;c<col;++c){
-                for(auto &it:Two_steps_kill_model){
-                    if(check_model(mp,r,c,dr,dc,it,color,0)){
-                        int cnt=it[it[0]+1];
+                // for(auto &it:Two_steps_kill_model){
+                //     if(check_model(mp,r,c,dr,dc,it,color,0)){
+                //         int cnt=it[it[0]+1];
+                //         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
+                //     }
+                //     if(check_model(mp,r,c,dr,dc,it,color,1)){
+                //         int cnt=it[0]-it[it[0]+1]-1;
+                //         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
+                //     }
+                // }
+                if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[0],color,0)){
+                    mp[r+dr][c+dc]=color;
+                    Score_type score1=alpha_beta(mp,-1e18,1e18,0,0);
+                    mp[r+dr][c+dc]=EMPTY;
+                    mp[r+dr*5][c+dc*5]=color;
+                    Score_type score2=alpha_beta(mp,-1e18,1e18,0,0);
+                    mp[r+dr*5][c+dc*5]=EMPTY;
+                    return score1>score2?Action{ACT_MOVE,r+dr,c+dc}:Action{ACT_MOVE,r+dr*5,c+dc*5};
+                }
+                for(int i=1;i<Two_steps_kill;++i){
+                    if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[i],color,0)){
+                        int cnt=Two_steps_kill_model[i][Two_steps_kill_model[i][0]+1];
                         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
                     }
-                    if(check_model(mp,r,c,dr,dc,it,color,1)){
-                        int cnt=it[0]-it[it[0]+1]-1;
+                    if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[i],color,1)){
+                        int cnt=Two_steps_kill_model[i][0]-Two_steps_kill_model[i][Two_steps_kill_model[i][0]+1]-1;
                         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
                     }
                 }
-                // if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[0],color,0)){
-                //     mp[r+dr][c+dc]=color;
-                //     Score_type score1=alpha_beta(mp,-1e18,1e18,0,0);
-                //     mp[r+dr][c+dc]=EMPTY;
-                //     mp[r+dr*5][c+dc*5]=color;
-                //     Score_type score2=alpha_beta(mp,-1e18,1e18,0,0);
-                //     mp[r+dr*5][c+dc*5]=EMPTY;
-                //     return score1>score2?Action{ACT_MOVE,r+dr,c+dc}:Action{ACT_MOVE,r+dr*5,c+dc*5};
-                // }
-                // for(int i=1;i<Two_steps_kill;++i){
-                //     if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[i],color,0)){
-                //         int cnt=Two_steps_kill_model[i][Two_steps_kill_model[i][0]+1];
-                //         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
-                //     }
-                //     if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[i],color,1)){
-                //         int cnt=Two_steps_kill_model[i][0]-Two_steps_kill_model[i][Two_steps_kill_model[i][0]+1]-1;
-                //         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
-                //     }
-                // }
             }
     return {ACT_JUMP,-1,-1};
 }
@@ -277,12 +277,12 @@ static const int vcf_model[][8]={
 static const int vcf_size=6;
 Action AI::vcf(vector<vector<int>>&mp,int dep,int color)const{
     if(dep==0) return {ACT_JUMP,-1,-1};
-    auto res=check_one_step_kill(mp,3-color);
+    auto res=check_one_step_kill(mp,color);
     if(res.type!=ACT_JUMP) return res;
-    for(auto &i:vcf_model)
-        for(auto &[dr,dc]:dirs)
-            for(int r=0;r<row;++r)
-                for(int c=0;c<col;++c)
+    for(int r=0;r<row;++r)
+        for(int c=0;c<col;++c)
+            for(auto &[dr,dc]:dirs)
+                for(auto &i:vcf_model)
                     for(auto &it:{0,1})
                         if(check_model(mp,r,c,dr,dc,i,color,it))
                             for(auto &[j,k]:vector<pair<int,int>>{{i[0]+1,i[0]+2},{i[0]+2,i[0]+1}}){
@@ -290,12 +290,12 @@ Action AI::vcf(vector<vector<int>>&mp,int dep,int color)const{
                                     tuple<int,int,int,int>{r+dr*(i[0]-i[j]-1),c+dc*(i[0]-i[j]-1),r+dr*(i[0]-i[k]-1),c+dc*(i[0]-i[k]-1)}:
                                     tuple<int,int,int,int>{r+dr*i[j],c+dc*i[j],r+dr*i[k],c+dc*i[k]};
                                 mp[mr][mc]=color;
-                                // res=check_one_step_kill(mp,3-color);
-                                // if(res.type!=ACT_JUMP){
-                                //     mp[mr][mc]=EMPTY;
-                                //     continue;
-                                // }
                                 mp[yr][yc]=3-color;
+                                res=check_one_step_kill(mp,3-color);
+                                if(res.type!=ACT_JUMP){
+                                    mp[mr][mc]=mp[yr][yc]=EMPTY;
+                                    continue;
+                                }
                                 res=vcf(mp,dep-1,color);
                                 mp[mr][mc]=mp[yr][yc]=EMPTY;
                                 if(res.type!=ACT_JUMP) return {ACT_MOVE,mr,mc};

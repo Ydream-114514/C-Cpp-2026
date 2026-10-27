@@ -6,7 +6,7 @@ bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     static const int dirs[4][2] ={{0,1},{1,0},{1,1},{1,-1}};
     for(const auto& [dr,dc] : dirs){
         int count=1;
-        for(int step=1;step<5;++step){
+        for(int step=1;step<5;++step){ 
             int r=row+dr * step;
             int c=col+dc * step;
             if(r<0 || r >= BOARD_SIZE || c<0 || c >= BOARD_SIZE) break;
@@ -36,6 +36,7 @@ void initGame(GameState &g){
     g.gameOver=-1;
     g.p[0]=make_shared<AI>(BOARD_SIZE,BOARD_SIZE,g.color[0],"AI");
     g.p[1]=make_shared<Player>(BOARD_SIZE,BOARD_SIZE,g.color[1],"Player");
+    g.st=stack<pair<int,int>>();
 }
 void ExitGame(GameState &g){
     g.p[0].reset();
@@ -48,6 +49,7 @@ void Handle_result(GameState &g,Action &result){
             g.moveCount++;
             g.lastr=result.row;
             g.lastc=result.col;
+            g.st.emplace(result.row,result.col);
             if(checkWin(g.board,result.row,result.col,g.color[g.turn])){
                 g.gameOver=g.turn;
                 g.score[g.turn]++;

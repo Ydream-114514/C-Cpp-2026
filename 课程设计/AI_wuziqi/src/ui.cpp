@@ -66,6 +66,7 @@ void printBoard(GameState &g){
     // DrawText(("It's "+g.p[g.turn]->name+"'s turn.").c_str(), MARGIN_LEFT, WIN_H - 60, 20, DARKGRAY);
     DrawButton(restartBtn);
     DrawButton(resignBtn);
+    DrawButton(returnBtn);
     //对局信息
     Draw_text_align({g.p[0]->name,{WIN_W/2-60-CELL_SIZE,30},BLACK,ALIGN_RIGHT,ALIGN_CENTER,40});
     DrawStone({WIN_W/2-60,30},CELL_SIZE*0.45f,g.color[0]==Chess_Color_BLACK);

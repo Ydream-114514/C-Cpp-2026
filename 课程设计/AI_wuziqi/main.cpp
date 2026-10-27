@@ -18,6 +18,18 @@ int main(){
             g.score[g.gameOver]++;
             buttonHandled=1;
         }
+        if(IsButtonClicked(returnBtn)){
+            if(g.st.size()>=2){
+                auto [r,c]=g.st.top();
+                g.st.pop();
+                g.board[r][c]=EMPTY;
+                tie(r,c)=g.st.top();
+                g.st.pop();
+                g.board[r][c]=EMPTY;
+                if(g.st.empty()) g.lastc=g.lastr=-1;
+                else tie(g.lastr,g.lastc)=g.st.top();
+            }
+        }
         if(!buttonHandled&&!~g.gameOver){
             auto result=g.p[g.turn]->turn(g.board);
             Handle_result(g,result);
