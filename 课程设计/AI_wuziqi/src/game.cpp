@@ -24,8 +24,18 @@ bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     }
     return false;
 }
+shared_ptr<Qishou> createPlayer(PlayerType t,int color,const string& name){
+    switch(t){
+        case PlayerType::Human:
+            return make_shared<Player>(BOARD_SIZE,BOARD_SIZE,color,name);
+        case PlayerType::AI:
+            return make_shared<AI>(BOARD_SIZE,BOARD_SIZE,color,name);
+    }
+    return nullptr;
+}
 
-void initGame(GameState &g){
+void initGame(GameState &g,GameConfig &cfg){
+    g.cfg=cfg;
     g.board=vector<vector<int>>(BOARD_SIZE,vector<int>(BOARD_SIZE,EMPTY));
     bool blackFirst=randInt(0,1);
     g.color[0]=blackFirst?Chess_Color_WHITE:Chess_Color_BLACK;
@@ -34,9 +44,10 @@ void initGame(GameState &g){
     g.lastr=g.lastc=-1;
     g.moveCount=0;
     g.gameOver=-1;
-    g.p[0]=make_shared<AI>(BOARD_SIZE,BOARD_SIZE,g.color[0],"AI");
-    g.p[1]=make_shared<Player>(BOARD_SIZE,BOARD_SIZE,g.color[1],"Player");
     g.st=stack<pair<int,int>>();
+    g.p[0]=createPlayer(cfg.p0,g.color[0],cfg.name0);
+    g.p[1]=createPlayer(cfg.p1,g.color[1],cfg.name1);
+    
 }
 void ExitGame(GameState &g){
     g.p[0].reset();

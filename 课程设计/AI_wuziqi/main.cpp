@@ -6,20 +6,26 @@ int main(){
     InitWindow(WIN_W, WIN_H, "五子棋");
     SetTargetFPS(60);
     GameState g;
-    initGame(g);
+    GameConfig cfg;
+    cfg.p0=PlayerType::AI;
+    cfg.p1=PlayerType::Human;
+    cfg.name0="AI";
+    cfg.name1="Player";
+    initGame(g,cfg);
     while(!WindowShouldClose()){
         bool buttonHandled=0;
         if(IsButtonClicked(restartBtn)){
-            initGame(g);
+            initGame(g,g.cfg);
             buttonHandled=1;
         }else if(!~g.gameOver&&IsButtonClicked(resignBtn)){
             cerr<<g.turn<<endl;
-            g.gameOver=typeid(g.p[1]).name()==typeid(Player).name();
+            g.gameOver=typeid(*g.p[1]).name()==typeid(Player).name();
             g.score[g.gameOver]++;
             buttonHandled=1;
         }
         if(IsButtonClicked(returnBtn)){
             if(g.st.size()>=2){
+                g.gameOver=-1;
                 auto [r,c]=g.st.top();
                 g.st.pop();
                 g.board[r][c]=EMPTY;

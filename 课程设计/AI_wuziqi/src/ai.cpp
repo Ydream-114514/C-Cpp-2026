@@ -365,6 +365,7 @@ Action AI::suansha(vector<vector<int>>&mp)const{
     res=double_three(mp,3-color);
     if(res.type!=ACT_JUMP) return res;
     cerr<<"not find duishou double_three"<<endl;
+
     return {ACT_JUMP,-1,-1};
 }
 Action AI::search(vector<vector<int>>&mp)const{
@@ -402,22 +403,24 @@ Action AI::computeMove(vector<vector<int>> mp)const{
         //     return {ACT_RESIGN,-1,-1};
         // }
     }else if(cnt==1){
+        vector<Action> st;
         for(int dr=-1;dr<=1;++dr)
             for(int dc=-1;dc<=1;++dc){
                 int r=row/2+dr,c=col/2+dc;
                 if(in(r,c)&&mp[r][c]==EMPTY)
-                    return {ACT_MOVE,r,c};
+                    st.push_back({ACT_MOVE,r,c});
             }
-        return Rand_step(mp);
+        if(st.empty()||rand_float(0.2)) return Rand_step(mp);
+        else return st[randInt(0,st.size()-1)];
     }else{
         auto res=search(mp);
-        // cerr<<res.row<<','<<res.col<<endl;
-        // mp[res.row][res.col]=color;
-        // cerr<<"start duishou vcf"<<endl;
-        // auto res1=vcf(mp,8,3-color);
-        // mp[res.row][res.col]=EMPTY;
-        // if(res1.type!=ACT_JUMP) return res1;
-        // cerr<<"not find duishou vcf"<<endl;
+        cerr<<res.row<<','<<res.col<<endl;
+        mp[res.row][res.col]=color;
+        cerr<<"start duishou vcf"<<endl;
+        auto res1=vcf(mp,8,3-color);
+        mp[res.row][res.col]=EMPTY;
+        if(res1.type!=ACT_JUMP) return res1;
+        cerr<<"not find duishou vcf"<<endl;
         return res;
     }
 }
