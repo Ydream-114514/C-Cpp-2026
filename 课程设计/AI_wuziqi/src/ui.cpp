@@ -36,7 +36,7 @@ void DrawStone(Vector2 c, float r, bool isBlack) {
     // 3. 高光（左上偏移）
     // DrawCircleV({c.x-r*0.35f,c.y-r*0.35f},r*0.28f,isBlack?Color{180,180,180,120}:Color{255,255,255,240});
 }
-void printBoard(GameState &g){
+void printBoard(GameState &g,vector<Button> Btns){
     // 画横线和竖线
     for(int i=0;i<BOARD_SIZE;i++){
         Vector2 start=BoardToScreen(i,0);
@@ -53,25 +53,24 @@ void printBoard(GameState &g){
             DrawCircleV(BoardToScreen(i,j),4,BLACK);
     for(int r=0;r<BOARD_SIZE;r++){
         for(int c=0;c<BOARD_SIZE;c++){
-            if (g.board[r][c]==EMPTY) continue;
+            if (g.board[r][c]==Chess_status::Empty) continue;
             Vector2 pos=BoardToScreen(r,c);
-            DrawStone(pos,CELL_SIZE*0.45f,g.board[r][c]==Chess_Color_BLACK); // 棋子半径为格子大小的 0.45 倍
+            DrawStone(pos,CELL_SIZE*0.45f,g.board[r][c]==Chess_status::Black); // 棋子半径为格子大小的 0.45 倍
         }
     }
     if(g.lastr>=0){
         Vector2 p=BoardToScreen(g.lastr,g.lastc);
         DrawCircleV(p,CELL_SIZE*0.1f,RED);
     }
-    // DrawText(("Your color is "+(string)(g.color[0]==Chess_Color_BLACK?"BLACK":"WHITE")).c_str(), MARGIN_LEFT, WIN_H - 90, 20, DARKGRAY);
+    // DrawText(("Your color is "+(string)(g.color[0]==Chess_status::Black?"BLACK":"WHITE")).c_str(), MARGIN_LEFT, WIN_H - 90, 20, DARKGRAY);
     // DrawText(("It's "+g.p[g.turn]->name+"'s turn.").c_str(), MARGIN_LEFT, WIN_H - 60, 20, DARKGRAY);
-    DrawButton(restartBtn);
-    DrawButton(resignBtn);
-    DrawButton(returnBtn);
+    for(auto &Btn:Btns)
+        DrawButton(Btn);
     //对局信息
     Draw_text_align({g.p[0]->name,{WIN_W/2-60-CELL_SIZE,30},BLACK,ALIGN_RIGHT,ALIGN_CENTER,40});
-    DrawStone({WIN_W/2-60,30},CELL_SIZE*0.45f,g.color[0]==Chess_Color_BLACK);
+    DrawStone({WIN_W/2-60,30},CELL_SIZE*0.45f,g.color[0]==Chess_status::Black);
     Draw_text_align({g.p[1]->name,{WIN_W/2+60+CELL_SIZE,30},BLACK,ALIGN_LEFT,ALIGN_CENTER,40});
-    DrawStone({WIN_W/2+60,30},CELL_SIZE*0.45f,g.color[1]==Chess_Color_BLACK);
+    DrawStone({WIN_W/2+60,30},CELL_SIZE*0.45f,g.color[1]==Chess_status::Black);
     Draw_text_align({":",{WIN_W/2,30},BLACK,ALIGN_CENTER,ALIGN_CENTER,40});
     Draw_text_align({to_string(g.score[0]),{WIN_W/2-10,30},BLACK,ALIGN_RIGHT,ALIGN_CENTER,30});
     Draw_text_align({to_string(g.score[1]),{WIN_W/2+10,30},BLACK,ALIGN_LEFT,ALIGN_CENTER,30});

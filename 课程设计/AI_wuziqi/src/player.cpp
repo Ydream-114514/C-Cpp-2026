@@ -8,7 +8,7 @@ Action Player::turn(const vector<vector<int>>& board) const{
         int c=(mousePos.x-MARGIN_LEFT)/CELL_SIZE+0.5f;
         int r=(mousePos.y-MARGIN_UP)/CELL_SIZE+0.5f;
         // 检查坐标是否有效且在棋盘内
-        if(in(r,c)&&board[r][c]==EMPTY) return {ACT_MOVE,r,c};
+        if(in(r,c)&&board[r][c]==Chess_status::Empty) return {ACT_MOVE,r,c};
         else return {ACT_JUMP,-1,-1};
     }else return {ACT_JUMP,-1,-1};
 }

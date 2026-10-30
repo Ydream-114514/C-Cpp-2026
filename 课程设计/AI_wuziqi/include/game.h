@@ -2,7 +2,7 @@
 #include "common.h"
 #include "qishou.h"
 
-enum class PlayerType{Human,AI};
+enum class PlayerType{Human,AI,AI_random};
 
 struct GameConfig{
     PlayerType p0=PlayerType::AI;

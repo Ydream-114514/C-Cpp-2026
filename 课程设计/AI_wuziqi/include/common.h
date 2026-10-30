@@ -2,10 +2,7 @@
 #include<bits/stdc++.h>
 #include "raylib.h"
 using namespace std;
-const int BOARD_SIZE=19;
-const int EMPTY=0;
-const int Chess_Color_BLACK=1;
-const int Chess_Color_WHITE=2;
+const int BOARD_SIZE=15;
 const int CELL_SIZE=40;        // 每个格子 40 像素
 const int MARGIN_UP=80;
 const int MARGIN_DOWN=100;
@@ -17,6 +14,12 @@ extern mt19937 rng;
 int randInt(int,int);
 bool rand_float(double);
 typedef double Score_type;
+
+enum Chess_status{
+    Empty=0,
+    Black=1,
+    White=2
+};
 
 enum ActionType{
     ACT_MOVE,

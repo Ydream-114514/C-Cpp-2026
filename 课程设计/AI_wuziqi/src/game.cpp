@@ -1,6 +1,7 @@
 #include "game.h"
 #include "player.h"
 #include "ai.h"
+#include "ai_random.h"
 
 bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     static const int dirs[4][2] ={{0,1},{1,0},{1,1},{1,-1}};
@@ -30,16 +31,18 @@ shared_ptr<Qishou> createPlayer(PlayerType t,int color,const string& name){
             return make_shared<Player>(BOARD_SIZE,BOARD_SIZE,color,name);
         case PlayerType::AI:
             return make_shared<AI>(BOARD_SIZE,BOARD_SIZE,color,name);
+        case PlayerType::AI_random:
+            return make_shared<AI_random>(BOARD_SIZE,BOARD_SIZE,color,name);
     }
     return nullptr;
 }
 
 void initGame(GameState &g,GameConfig &cfg){
     g.cfg=cfg;
-    g.board=vector<vector<int>>(BOARD_SIZE,vector<int>(BOARD_SIZE,EMPTY));
+    g.board=vector<vector<int>>(BOARD_SIZE,vector<int>(BOARD_SIZE,Chess_status::Empty));
     bool blackFirst=randInt(0,1);
-    g.color[0]=blackFirst?Chess_Color_WHITE:Chess_Color_BLACK;
-    g.color[1]=blackFirst?Chess_Color_BLACK:Chess_Color_WHITE;
+    g.color[0]=blackFirst?Chess_status::White:Chess_status::Black;
+    g.color[1]=blackFirst?Chess_status::Black:Chess_status::White;
     g.turn=blackFirst;
     g.lastr=g.lastc=-1;
     g.moveCount=0;

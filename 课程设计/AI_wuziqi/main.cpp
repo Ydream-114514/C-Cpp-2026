@@ -28,10 +28,10 @@ int main(){
                 g.gameOver=-1;
                 auto [r,c]=g.st.top();
                 g.st.pop();
-                g.board[r][c]=EMPTY;
+                g.board[r][c]=Chess_status::Empty;
                 tie(r,c)=g.st.top();
                 g.st.pop();
-                g.board[r][c]=EMPTY;
+                g.board[r][c]=Chess_status::Empty;
                 if(g.st.empty()) g.lastc=g.lastr=-1;
                 else tie(g.lastr,g.lastc)=g.st.top();
             }
@@ -42,7 +42,7 @@ int main(){
         }
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        printBoard(g);
+        printBoard(g,{returnBtn,resignBtn,restartBtn});
         EndDrawing();
     }
     ExitGame(g);
