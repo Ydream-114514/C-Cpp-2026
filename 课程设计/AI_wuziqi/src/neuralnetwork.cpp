@@ -306,5 +306,7 @@ bool neural_network::load_model(const string &path)const{
     return true;
 }
 Action neural_network::computeMove(vector<vector<int>> mp)const{
-
+    // TODO: 接入模型推理。当前尚未实现，回退到父类 AI 的搜索策略，
+    // 避免 "no return statement in function returning non-void" 的未定义行为。
+    return AI::computeMove(mp);
 }

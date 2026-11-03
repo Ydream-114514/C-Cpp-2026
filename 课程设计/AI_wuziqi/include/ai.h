@@ -2,16 +2,34 @@
 #include "common.h"
 #include "qishou.h"
 
+struct AIConfig:QishouConfig{
+    int depth=4;      // alpha-beta 搜索层数（ply）
+    int pace=2;       // 候选点邻域半径
+    int K=10;         // 每层保留的候选点个数
+    int vcfDepth_=8;  // VCF 连续冲四搜索深度
+    int vctDepth_=8;  // VCT 连续冲三搜索深度
+    AIConfig()=default;
+    AIConfig(int row,int col,int color,string name,
+             int depth=4,int pace=2,int K=10,int vcfDepth_=8)
+        :QishouConfig(row,col,color,name),
+         depth(depth),pace(pace),K(K),vcfDepth_(vcfDepth_){}
+};
 class AI : public Qishou,public enable_shared_from_this<AI>{
     mutable future<Action> future_;
     mutable bool thinking_ = false;
-    int depth=6,pace=2;
-    int K=20;
+    int depth,pace;
+    int K,vcfDepth_,vctDepth_;
 public:
-    AI(int row,int col,int color,string name):Qishou(row,col,color,name){}
-    bool isThinking()const override{return thinking_;}
+    AI(AIConfig x):Qishou(x){
+        depth=x.depth;
+        pace=x.pace;
+        K=x.K;
+        vcfDepth_=x.vcfDepth_;
+        vctDepth_=x.vctDepth_;
+    }
     Action turn(const vector<vector<int>> &)const override;
-// private:
+    bool isThinking()const override{return thinking_;}
+private:
     bool check_model(const vector<vector<int>>&,const int&,const int&,const int&,const int&,const int*,int,bool)const;
     bool patternScore(int,int,int)const;
     Score_type calc(const vector<vector<int>>&,int)const;
@@ -22,15 +40,16 @@ public:
     Score_type alpha_beta(vector<vector<int>>&,Score_type,Score_type,int,bool)const;
     Action a_b_search(const vector<vector<int>>&)const;
     Action search(vector<vector<int>>&)const;
-    virtual Action computeMove(vector<vector<int>>)const;
     Action vcf(vector<vector<int>>&,int,int)const;
+    Action vct(vector<vector<int>>&,int,int)const;
     bool check_db_thr(const vector<vector<int>>&,int,int,int)const;
     Action double_three(vector<vector<int>>&,int)const;
-    Action suansha(vector<vector<int>>&)const;
     Action check_one_step_kill(const vector<vector<int>>&,int)const;
     Action check_two_steps_kill(vector<vector<int>>&,int)const;
 protected:
     Action Rand_step(const vector<vector<int>>&)const;
+    Action suansha(vector<vector<int>>&)const;
+    virtual Action computeMove(vector<vector<int>>)const;
 };
 
 bool checkWin(const vector<vector<int>>&,int,int,int);

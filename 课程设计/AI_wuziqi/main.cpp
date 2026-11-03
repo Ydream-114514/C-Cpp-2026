@@ -7,10 +7,10 @@ int main(){
     SetTargetFPS(60);
     GameState g;
     GameConfig cfg;
-    cfg.p0=PlayerType::AI;
-    cfg.p1=PlayerType::Human;
-    cfg.name0="AI";
-    cfg.name1="Player";
+    cfg.p[0]=PlayerType::AI;
+    cfg.p[1]=PlayerType::Human;
+    cfg.c[0]=make_shared<AIConfig>(BOARD_SIZE,BOARD_SIZE,-1,"AI");
+    cfg.c[1]=make_shared<AIConfig>(BOARD_SIZE,BOARD_SIZE,-1,"Player");
     initGame(g,cfg);
     while(!WindowShouldClose()){
         bool buttonHandled=0;
