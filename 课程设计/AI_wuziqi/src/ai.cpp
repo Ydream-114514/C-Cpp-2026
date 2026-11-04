@@ -12,7 +12,6 @@ const Score_type Die_Four      =4e2;
 const Score_type Die_Three     =3e2;
 const Score_type Die_Two       =3e1;
 
-
 static const int dirs[4][2]={{0,1},{1,0},{1,1},{1,-1}};
 
 Action AI::turn(const vector<vector<int>> &board)const{
@@ -191,96 +190,80 @@ Action AI::a_b_search(const vector<vector<int>>&board)const{
     if(x==-1) return Rand_step(board);
     return{ACT_MOVE,x,y};
 }
-bool AI::check_model(const vector<vector<int>> &mp,const int &r,const int &c,const int &dr,const int &dc,const int *_model,int color,bool rev)const{
-    int len=_model[0];
+
+struct model{
+    vector<int> model;
+    vector<int> pos;
+    vector<int> nxt;
+};
+
+bool AI::check_model(const vector<vector<int>> &mp,int r,int c,int dr,int dc,const vector<int> &_model,int color,bool rev)const{
+    int len=_model.size();
     if(in(r,c)&&in(r+(len-1)*dr,c+(len-1)*dc)){
         if(rev){
             for(int i=0;i<len;++i)
-                if(mp[r+i*dr][c+i*dc]!=_model[len-i]*color)
+                if(mp[r+i*dr][c+i*dc]!=_model[len-i-1]*color)
                     return 0;
             return 1;
         }else{
             for(int i=0;i<len;++i)
-                if(mp[r+i*dr][c+i*dc]!=_model[i+1]*color)
+                if(mp[r+i*dr][c+i*dc]!=_model[i]*color)
                     return 0;
             return 1;
         }
     }
     return 0;
 }
-static constexpr int One_step_kill=3;
-static constexpr int One_step_kill_model[][8]={
-    {5,0,1,1,1,1,0},
-    {5,1,0,1,1,1,1},
-    {5,1,1,0,1,1,2},
+model One_step_kill_model[]={
+    {{0,1,1,1,1},{0},{}},
+    {{1,0,1,1,1},{1},{}},
+    {{1,1,0,1,1},{2},{}},
+    {{1,1,1,0,1},{3},{}},
+    {{1,1,1,1,0},{4},{}},
 };
 Action AI::check_one_step_kill(const vector<vector<int>>&mp,int color)const{
     for(const auto &[dr,dc]:dirs)
         for(int r=0;r<row;++r)
             for(int c=0;c<col;++c)
-                for(auto &it:One_step_kill_model){
-                    if(check_model(mp,r,c,dr,dc,it,color,0)){
-                        int cnt=it[it[0]+1];
+                for(auto &it:One_step_kill_model)
+                    if(check_model(mp,r,c,dr,dc,it.model,color,0)){
+                        int cnt=it.pos[0];
                         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
                     }
-                    if(check_model(mp,r,c,dr,dc,it,color,1)){
-                        int cnt=it[0]-it[it[0]+1]-1;
-                        return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
-                    }
-                }
     return {ACT_JUMP,-1,-1};
 }
-static constexpr int Two_steps_kill=3;
-static constexpr int Two_steps_kill_model[][9]={
-    {7,0,0,1,1,1,0,0,1},
-    {6,0,0,1,1,1,0,1},
-    {6,0,1,1,0,1,0,3},
+model Two_steps_kill_model[]={
+    {{0,0,1,1,1,0,0},{1},{}},
+    {{0,0,1,1,1,0},{1},{}},
+    {{0,1,1,0,1,0},{3},{}},
+    {{0,1,1,1,0,0},{4},{}},
+    {{0,1,0,1,1,0},{2},{}},
 };
 Action AI::check_two_steps_kill(vector<vector<int>>&mp,int color)const{
     for(const auto &[dr,dc]:dirs)
         for(int r=0;r<row;++r)
             for(int c=0;c<col;++c){
-                // for(auto &it:Two_steps_kill_model){
-                //     if(check_model(mp,r,c,dr,dc,it,color,0)){
-                //         int cnt=it[it[0]+1];
-                //         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
-                //     }
-                //     if(check_model(mp,r,c,dr,dc,it,color,1)){
-                //         int cnt=it[0]-it[it[0]+1]-1;
-                //         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
-                //     }
-                // }
-                if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[0],color,0)){
-                    mp[r+dr][c+dc]=color;
-                    Score_type score1=alpha_beta(mp,-1e18,1e18,0,0);
-                    mp[r+dr][c+dc]=Chess_status::Empty;
-                    mp[r+dr*5][c+dc*5]=color;
-                    Score_type score2=alpha_beta(mp,-1e18,1e18,0,0);
-                    mp[r+dr*5][c+dc*5]=Chess_status::Empty;
-                    return score1>score2?Action{ACT_MOVE,r+dr,c+dc}:Action{ACT_MOVE,r+dr*5,c+dc*5};
-                }
-                for(int i=1;i<Two_steps_kill;++i){
-                    if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[i],color,0)){
-                        int cnt=Two_steps_kill_model[i][Two_steps_kill_model[i][0]+1];
-                        return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
-                    }
-                    if(check_model(mp,r,c,dr,dc,Two_steps_kill_model[i],color,1)){
-                        int cnt=Two_steps_kill_model[i][0]-Two_steps_kill_model[i][Two_steps_kill_model[i][0]+1]-1;
+                for(auto &it:Two_steps_kill_model){
+                    if(check_model(mp,r,c,dr,dc,it.model,color,0)){
+                        int cnt=it.pos[0];
                         return {ACT_MOVE,r+dr*cnt,c+dc*cnt};
                     }
                 }
             }
     return {ACT_JUMP,-1,-1};
 }
-static const int vcf_model[][8]={
-    {5,0,1,1,1,0,0,4},
-    {5,1,0,1,0,1,1,3},
-    {5,0,0,1,1,1,0,1},
-    {5,0,1,0,1,1,0,2},
-    {5,0,1,1,0,1,0,3},
-    {5,1,0,0,1,1,1,2},
+model vcf_model[]={
+    {{0,0,1,1,1},{0,1},{1,0}},
+    {{0,1,0,1,1},{0,2},{2,0}},
+    {{0,1,1,0,1},{0,3},{3,0}},
+    {{0,1,1,1,0},{0,4},{4,0}},
+    {{1,0,0,1,1},{1,2},{2,1}},
+    {{1,0,1,0,1},{1,3},{3,1}},
+    {{1,1,0,0,1},{2,3},{3,2}},
+    {{1,0,1,1,0},{1,4},{4,1}},
+    {{1,1,0,1,0},{2,4},{4,2}},
+    {{1,1,1,0,0},{3,4},{4,3}},
 };
-static const int vcf_size=6;
 Action AI::vcf(vector<vector<int>>&mp,int dep,int color)const{
     auto res=check_one_step_kill(mp,color);
     if(res.type!=ACT_JUMP) return res;
@@ -288,26 +271,27 @@ Action AI::vcf(vector<vector<int>>&mp,int dep,int color)const{
     for(int r=0;r<row;++r)
         for(int c=0;c<col;++c)
             for(auto &[dr,dc]:dirs)
-                for(auto &i:vcf_model)
-                    for(auto &it:{0,1})
-                        if(check_model(mp,r,c,dr,dc,i,color,it))
-                            for(auto &[j,k]:vector<pair<int,int>>{{i[0]+1,i[0]+2},{i[0]+2,i[0]+1}}){
-                                auto [mr,mc,yr,yc]=it?
-                                    tuple<int,int,int,int>{r+dr*(i[0]-i[j]-1),c+dc*(i[0]-i[j]-1),r+dr*(i[0]-i[k]-1),c+dc*(i[0]-i[k]-1)}:
-                                    tuple<int,int,int,int>{r+dr*i[j],c+dc*i[j],r+dr*i[k],c+dc*i[k]};
-                                mp[mr][mc]=color;
-                                mp[yr][yc]=3-color;
-                                res=check_one_step_kill(mp,3-color);
-                                if(res.type!=ACT_JUMP){
-                                    mp[mr][mc]=mp[yr][yc]=Chess_status::Empty;
-                                    continue;
-                                }
-                                res=vcf(mp,dep-1,color);
+                for(auto &it:vcf_model)
+                    if(check_model(mp,r,c,dr,dc,it.model,color,0))
+                        for(int i=0;i<2;++i){
+                            auto [d1,d2]=tie(it.pos[i],it.nxt[i]);
+                            int mr=r+dr*d1,mc=c+dc*d1;
+                            int yr=r+dr*d2,yc=c+dc*d2;
+                            mp[mr][mc]=color;
+                            mp[yr][yc]=3-color;
+                            res=check_one_step_kill(mp,3-color);
+                            if(res.type!=ACT_JUMP){
                                 mp[mr][mc]=mp[yr][yc]=Chess_status::Empty;
-                                if(res.type!=ACT_JUMP) return {ACT_MOVE,mr,mc};
+                                continue;
                             }
+                            res=vcf(mp,dep-1,color);
+                            mp[mr][mc]=mp[yr][yc]=Chess_status::Empty;
+                            if(res.type!=ACT_JUMP) return {ACT_MOVE,mr,mc};
+                        }
     return {ACT_JUMP,-1,-1};
 }
+
+
 Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
     auto res=check_two_steps_kill(mp,3-color);
     if(res.type!=ACT_JUMP) return {ACT_JUMP,-1,-1};
@@ -334,28 +318,32 @@ Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
             }
             mp[r][c]=Chess_status::Empty;
         }
-            
     return {ACT_JUMP,-1,-1};
 }
-static const int db_thr[][8]={
-    {6,0,0,0,1,1,0,1},
-    {6,0,0,0,1,1,0,2},
-    {6,0,0,1,1,0,0,1},
-    {6,0,0,1,0,1,0,1},
-    {6,0,0,1,0,1,0,3},
-    {6,0,1,0,0,1,0,2},
+model db_thr_model[]={
+    {{0,0,0,1,1,0},{1},{}},
+    {{0,0,0,1,1,0},{2},{}},
+    {{0,0,1,1,0,0},{1},{}},
+    {{0,0,1,0,1,0},{1},{}},
+    {{0,0,1,0,1,0},{3},{}},
+    {{0,1,0,0,1,0},{2},{}},
 };
-static const int db_thr_size=6;
 bool AI::check_db_thr(const vector<vector<int>>&mp,int r,int c,int color)const{
     for(int i=0;i<3;++i)
-        for(auto &it:db_thr)
-            if(check_model(mp,r-it[7]*dirs[i][0],c-it[7]*dirs[i][1],dirs[i][0],dirs[i][1],it,color,0)||
-               check_model(mp,r-(it[0]-it[7]-1)*dirs[i][0],c-(it[0]-it[7]-1)*dirs[i][1],dirs[i][0],dirs[i][1],it,color,1))
+        for(auto &it:db_thr_model){
+            int pos=it.pos[0];
+            int len=it.model.size();
+            if(check_model(mp,r-pos*dirs[i][0],c-pos*dirs[i][1],dirs[i][0],dirs[i][1],it.model,color,0)||
+            check_model(mp,r-(len-pos-1)*dirs[i][0],c-(len-pos-1)*dirs[i][1],dirs[i][0],dirs[i][1],it.model,color,1))
                 for(int j=i+1;j<4;++j)
-                    for(auto &jt:db_thr)
-                        if(check_model(mp,r-jt[7]*dirs[j][0],c-jt[7]*dirs[j][1],dirs[j][0],dirs[j][1],jt,color,0)||
-                        check_model(mp,r-(jt[0]-jt[7]-1)*dirs[j][0],c-(jt[0]-jt[7]-1)*dirs[j][1],dirs[j][0],dirs[j][1],jt,color,1))
+                    for(auto &jt:db_thr_model){
+                        int jpos=jt.pos[0];
+                        int jlen=jt.model.size();
+                        if(check_model(mp,r-jpos*dirs[j][0],c-jpos*dirs[j][1],dirs[j][0],dirs[j][1],jt.model,color,0)||
+                        check_model(mp,r-(jlen-jpos-1)*dirs[j][0],c-(jlen-jpos-1)*dirs[j][1],dirs[j][0],dirs[j][1],jt.model,color,1))
                             return 1;
+                    }
+        }
     return 0;
 }
 Action AI::double_three(vector<vector<int>>&mp,int color)const{
@@ -397,10 +385,10 @@ Action AI::suansha(vector<vector<int>>&mp)const{
     if(res.type!=ACT_JUMP) return res;
     cerr<<"not find my vcf"<<endl;
 
-    cerr<<"start my vct"<<endl;
-    res=vct(mp,vctDepth_,color);
-    if(res.type!=ACT_JUMP) return res;
-    cerr<<"not find my vct"<<endl;
+    // cerr<<"start my vct"<<endl;
+    // res=vct(mp,vctDepth_,color);
+    // if(res.type!=ACT_JUMP) return res;
+    // cerr<<"not find my vct"<<endl;
 
     cerr<<"start duishou double_three"<<endl;
     res=double_three(mp,3-color);
