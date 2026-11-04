@@ -282,9 +282,9 @@ static const int vcf_model[][8]={
 };
 static const int vcf_size=6;
 Action AI::vcf(vector<vector<int>>&mp,int dep,int color)const{
-    if(dep==0) return {ACT_JUMP,-1,-1};
     auto res=check_one_step_kill(mp,color);
     if(res.type!=ACT_JUMP) return res;
+    if(dep==0) return {ACT_JUMP,-1,-1};
     for(int r=0;r<row;++r)
         for(int c=0;c<col;++c)
             for(auto &[dr,dc]:dirs)
@@ -308,34 +308,33 @@ Action AI::vcf(vector<vector<int>>&mp,int dep,int color)const{
                             }
     return {ACT_JUMP,-1,-1};
 }
-static const int vct_model[][8]={
-    
-};
 Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
-    if(dep==0) return {ACT_JUMP,-1,-1};
-    auto res=check_one_step_kill(mp,color);
+    auto res=check_two_steps_kill(mp,3-color);
+    if(res.type!=ACT_JUMP) return {ACT_JUMP,-1,-1};
+    res=check_one_step_kill(mp,color);
     if(res.type!=ACT_JUMP) return res;
+    res=check_two_steps_kill(mp,color);
+    if(res.type!=ACT_JUMP) return res;
+    if(dep==0) return {ACT_JUMP,-1,-1};
     for(int r=0;r<row;++r)
-        for(int c=0;c<col;++c)
-            for(auto &[dr,dc]:dirs)
-                for(auto &i:vct_model)
-                    for(auto &it:{0,1})
-                        if(check_model(mp,r,c,dr,dc,i,color,it))
-                            for(auto &[j,k]:vector<pair<int,int>>{{i[0]+1,i[0]+2},{i[0]+2,i[0]+1}}){
-                                auto [mr,mc,yr,yc]=it?
-                                    tuple<int,int,int,int>{r+dr*(i[0]-i[j]-1),c+dc*(i[0]-i[j]-1),r+dr*(i[0]-i[k]-1),c+dc*(i[0]-i[k]-1)}:
-                                    tuple<int,int,int,int>{r+dr*i[j],c+dc*i[j],r+dr*i[k],c+dc*i[k]};
-                                mp[mr][mc]=color;
-                                mp[yr][yc]=3-color;
-                                res=check_one_step_kill(mp,3-color);
-                                if(res.type!=ACT_JUMP){
-                                    mp[mr][mc]=mp[yr][yc]=Chess_status::Empty;
-                                    continue;
-                                }
-                                res=vct(mp,dep-1,color);
-                                mp[mr][mc]=mp[yr][yc]=Chess_status::Empty;
-                                if(res.type!=ACT_JUMP) return {ACT_MOVE,mr,mc};
-                            }
+        for(int c=0;c<col;++c){
+            if(mp[r][c]!=Chess_status::Empty) continue;
+            if(!check(mp,r,c)) continue;
+            mp[r][c]=color;
+            res=check_two_steps_kill(mp,color);
+            if(res.type!=ACT_JUMP){
+                auto [ignore,mr,mc]=res;
+                mp[mr][mc]=3-color;
+                res=vct(mp,dep-1,color);
+                mp[mr][mc]=mp[r][c]=Chess_status::Empty;
+                if(res.type!=ACT_JUMP){
+                    mp[r][c]=Chess_status::Empty;
+                    return {ACT_MOVE,r,c};
+                }
+            }
+            mp[r][c]=Chess_status::Empty;
+        }
+            
     return {ACT_JUMP,-1,-1};
 }
 static const int db_thr[][8]={
@@ -398,10 +397,10 @@ Action AI::suansha(vector<vector<int>>&mp)const{
     if(res.type!=ACT_JUMP) return res;
     cerr<<"not find my vcf"<<endl;
 
-    // cerr<<"start my vct"<<endl;
-    // res=vct(mp,vctDepth_,color);
-    // if(res.type!=ACT_JUMP) return res;
-    // cerr<<"not find my vct"<<endl;
+    cerr<<"start my vct"<<endl;
+    res=vct(mp,vctDepth_,color);
+    if(res.type!=ACT_JUMP) return res;
+    cerr<<"not find my vct"<<endl;
 
     cerr<<"start duishou double_three"<<endl;
     res=double_three(mp,3-color);
