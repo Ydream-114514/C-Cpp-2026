@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+
 struct QishouConfig{
     int row,col,color;
     string name;

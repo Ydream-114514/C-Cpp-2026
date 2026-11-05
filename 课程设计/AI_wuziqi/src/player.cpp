@@ -1,4 +1,3 @@
-#include "common.h"
 #include "player.h"
 
 Action Player::turn(const vector<vector<int>>& board) const{

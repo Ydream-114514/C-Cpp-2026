@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 #include "game.h"
+#include "raylib.h"
+
 struct Button{
     string name;
     Rectangle pos;

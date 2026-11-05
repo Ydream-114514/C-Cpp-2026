@@ -3,16 +3,16 @@
 #include "qishou.h"
 
 struct AIConfig:QishouConfig{
-    int depth=4;      // alpha-beta 搜索层数（ply）
-    int pace=2;       // 候选点邻域半径
-    int K=10;         // 每层保留的候选点个数
-    int vcfDepth_=8;  // VCF 连续冲四搜索深度
-    int vctDepth_=8;  // VCT 连续冲三搜索深度
+    int depth;      // alpha-beta 搜索层数（ply）
+    int pace;       // 候选点邻域半径
+    int K;         // 每层保留的候选点个数
+    int vcfDepth_;  // VCF 连续冲四搜索深度
+    int vctDepth_;  // VCT 连续冲三搜索深度
     AIConfig()=default;
     AIConfig(int row,int col,int color,string name,
-             int depth=4,int pace=2,int K=10,int vcfDepth_=8)
+             int depth=4,int pace=2,int K=10,int vcfDepth_=8,int vctDepth_=4)
         :QishouConfig(row,col,color,name),
-         depth(depth),pace(pace),K(K),vcfDepth_(vcfDepth_){}
+         depth(depth),pace(pace),K(K),vcfDepth_(vcfDepth_),vctDepth_(vctDepth_){}
 };
 class AI : public Qishou,public enable_shared_from_this<AI>{
     mutable future<Action> future_;
@@ -44,8 +44,9 @@ private:
     Action vct(vector<vector<int>>&,int,int)const;
     bool check_db_thr(const vector<vector<int>>&,int,int,int)const;
     Action double_three(vector<vector<int>>&,int)const;
-    Action check_one_step_kill(const vector<vector<int>>&,int)const;
-    Action check_two_steps_kill(vector<vector<int>>&,int)const;
+    Action check_Four(const vector<vector<int>>&,int)const;
+    Action check_live_Three(vector<vector<int>>&,int)const;
+    vector<Action> check_live_Three1(vector<vector<int>>&,int)const;
 protected:
     Action Rand_step(const vector<vector<int>>&)const;
     Action suansha(vector<vector<int>>&)const;

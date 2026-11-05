@@ -1,7 +1,7 @@
 #pragma once
 #include<bits/stdc++.h>
-#include "raylib.h"
 using namespace std;
+
 const int BOARD_SIZE=15;
 const int CELL_SIZE=40;        // 每个格子 40 像素
 const int MARGIN_UP=80;
@@ -31,4 +31,6 @@ struct Action{
     ActionType type;
     int row;
     int col;
+    Action()=default;
+    Action(ActionType t,int r,int c):type(t),row(r),col(c){}
 };

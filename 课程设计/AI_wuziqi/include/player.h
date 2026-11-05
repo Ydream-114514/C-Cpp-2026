@@ -1,5 +1,7 @@
 #pragma once
+#include "common.h"
 #include "qishou.h"
+#include "raylib.h"
 
 class Player : public Qishou{
 public:

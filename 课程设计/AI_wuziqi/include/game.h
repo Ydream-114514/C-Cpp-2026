@@ -1,7 +1,8 @@
 #pragma once
 #include "common.h"
-#include "qishou.h"
 #include "ai.h"
+#include "player.h"
+#include "ai_random.h"
 
 enum class PlayerType{Human,AI,AI_random};
 

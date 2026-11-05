@@ -1,7 +1,5 @@
 #include "game.h"
-#include "player.h"
-#include "ai.h"
-#include "ai_random.h"
+
 
 bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     static const int dirs[4][2] ={{0,1},{1,0},{1,1},{1,-1}};
