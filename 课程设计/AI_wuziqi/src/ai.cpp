@@ -78,7 +78,7 @@ Score_type AI::get_score(const vector<vector<int>>&mp)const{
     auto score2=calc(mp,3-color);
     if(score1>=Win_score) return Win_score;
     if(score2>=Win_score) return -Win_score;
-    return score1-score2*1.2f;
+    return score1-score2*0.8f;
 }
 Score_type AI::local_score(const vector<vector<int>>&mp,int r,int c,int me)const{
     Score_type total=0;
