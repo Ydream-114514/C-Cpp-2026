@@ -9,7 +9,7 @@ int main(){
     GameConfig cfg;
     cfg.p[0]=PlayerType::AI;
     cfg.p[1]=PlayerType::Human;
-    cfg.c[0]=make_shared<AIConfig>(BOARD_SIZE,BOARD_SIZE,-1,"AI",4,2,10,8,5);
+    cfg.c[0]=make_shared<AIConfig>(BOARD_SIZE,BOARD_SIZE,-1,"AI",4,2,10,8,6);
     cfg.c[1]=make_shared<AIConfig>(BOARD_SIZE,BOARD_SIZE,-1,"Player");
     initGame(g,cfg);
     while(!WindowShouldClose()){

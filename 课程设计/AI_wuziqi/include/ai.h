@@ -1,6 +1,7 @@
 #pragma once
 #include "common.h"
 #include "qishou.h"
+#include "Zobristhash.h"
 
 struct AIConfig:QishouConfig{
     int depth;      // alpha-beta 搜索层数（ply）
@@ -10,17 +11,18 @@ struct AIConfig:QishouConfig{
     int vctDepth_;  // VCT 连续冲三搜索深度
     AIConfig()=default;
     AIConfig(int row,int col,int color,string name,
-             int depth=4,int pace=2,int K=10,int vcfDepth_=8,int vctDepth_=4)
+             int depth=4,int pace=2,int K=10,int vcfDepth_=8,int vctDepth_=6)
         :QishouConfig(row,col,color,name),
          depth(depth),pace(pace),K(K),vcfDepth_(vcfDepth_),vctDepth_(vctDepth_){}
 };
-class AI : public Qishou,public enable_shared_from_this<AI>{
+class AI : public Qishou,public enable_shared_from_this<AI>,private ZobristHash{
     mutable future<Action> future_;
     mutable bool thinking_ = false;
     int depth,pace;
     int K,vcfDepth_,vctDepth_;
 public:
     AI(AIConfig x):Qishou(x){
+        initZobristHash(x.row,x.col);
         depth=x.depth;
         pace=x.pace;
         K=x.K;
@@ -41,7 +43,7 @@ private:
     Action a_b_search(const vector<vector<int>>&)const;
     Action search(vector<vector<int>>&)const;
     Action vcf(vector<vector<int>>&,int,int)const;
-    Action vct(vector<vector<int>>&,int,int)const;
+    Action vct(vector<vector<int>>&,int,int,unsigned long long)const;
     bool check_db_thr(const vector<vector<int>>&,int,int,int)const;
     Action double_three(vector<vector<int>>&,int)const;
     Action check_Four(const vector<vector<int>>&,int)const;

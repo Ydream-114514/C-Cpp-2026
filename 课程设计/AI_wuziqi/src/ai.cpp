@@ -334,15 +334,19 @@ Action AI::vcf(vector<vector<int>>&mp,int dep,int color)const{
     return {ACT_JUMP,-1,-1};
 }
 
-// model vct_model[]={
-//     {{0,0,1,0,1,0},{{1,{0,3,5}},{3,{1,5}}}},
-//     {{0,1,0,1,0,0},{{2,{0,4}},{4,{0,2,5}}}},
-//     {{0,0,1,1,0,0},{{1,{0,4,5}},{3,{1,5}}}},
-// };
-
-Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
+Action AI::vct(vector<vector<int>>&mp,int dep,int color,unsigned long long Hash)const{
+    if(Find(Hash)){
+        auto [r,c]=Get(Hash);
+        return {ACT_MOVE,r,c};
+    }
+    auto res=check_Four(mp,color);
+    if(res.type!=ACT_JUMP){
+        auto [ignore,r,c]=res;
+        const_cast<AI*>(this)->Insert(Hash,r,c);
+        return res;
+    }
     if(dep==0) return {ACT_JUMP,-1,-1};
-    auto res=check_Four(mp,3-color);
+    res=check_Four(mp,3-color);
     if(res.type!=ACT_JUMP){
         auto [ignore,r,c]=res;
         mp[r][c]=color;
@@ -350,10 +354,11 @@ Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
         if(res.type!=ACT_JUMP){
             auto [ignore,mr,mc]=res;
             mp[mr][mc]=3-color;
-            res=vct(mp,dep-1,color);
+            res=vct(mp,dep-1,color,Add(Add(Hash,r,c,color),mr,mc,3-color));
             mp[mr][mc]=Chess_status::Empty;
             if(res.type!=ACT_JUMP){
                 mp[r][c]=Chess_status::Empty;
+                const_cast<AI*>(this)->Insert(Hash,r,c);
                 return {ACT_MOVE,r,c};
             }
         }
@@ -364,7 +369,7 @@ Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
         }
         for(auto [ignore,mr,mc]:res1){
             mp[mr][mc]=3-color;
-            res=vct(mp,dep-1,color);
+            res=vct(mp,dep-1,color,Add(Add(Hash,r,c,color),mr,mc,3-color));
             mp[mr][mc]=Chess_status::Empty;
             if(res.type==ACT_JUMP){
                 mp[r][c]=Chess_status::Empty;
@@ -372,12 +377,15 @@ Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
             }
         }
         mp[r][c]=Chess_status::Empty;
+        const_cast<AI*>(this)->Insert(Hash,r,c);
         return {ACT_MOVE,r,c};
     }
-    res=check_Four(mp,color);
-    if(res.type!=ACT_JUMP) return res;
     res=check_live_Three(mp,color);
-    if(res.type!=ACT_JUMP) return res;
+    if(res.type!=ACT_JUMP){
+        auto [ignore,r,c]=res;
+        const_cast<AI*>(this)->Insert(Hash,r,c);
+        return res;
+    }
     for(int r=0;r<row;++r)
         for(int c=0;c<col;++c){
             if(mp[r][c]!=Chess_status::Empty) continue;
@@ -387,9 +395,12 @@ Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
             if(res.type!=ACT_JUMP){
                 auto [ignore,mr,mc]=res;
                 mp[mr][mc]=3-color;
-                res=vct(mp,dep-1,color);
+                res=vct(mp,dep-1,color,Add(Add(Hash,r,c,color),mr,mc,3-color));
                 mp[mr][mc]=mp[r][c]=Chess_status::Empty;
-                if(res.type!=ACT_JUMP) return {ACT_MOVE,r,c};
+                if(res.type!=ACT_JUMP){
+                    const_cast<AI*>(this)->Insert(Hash,r,c);
+                    return {ACT_MOVE,r,c};
+                }
             }
             mp[r][c]=Chess_status::Empty;
         }
@@ -408,7 +419,7 @@ Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
             bool flag=1;
             for(auto [ignore,mr,mc]:res1){
                 mp[mr][mc]=3-color;
-                res=vct(mp,dep-1,color);
+                res=vct(mp,dep-1,color,Add(Add(Hash,r,c,color),mr,mc,3-color));
                 mp[mr][mc]=Chess_status::Empty;
                 if(res.type==ACT_JUMP){
                     mp[r][c]=Chess_status::Empty;
@@ -417,7 +428,10 @@ Action AI::vct(vector<vector<int>>&mp,int dep,int color)const{
                 }
             }
             mp[r][c]=Chess_status::Empty;
-            if(flag) return {ACT_MOVE,r,c};
+            if(flag){
+                const_cast<AI*>(this)->Insert(Hash,r,c);
+                return {ACT_MOVE,r,c};
+            }
         }
     return {ACT_JUMP,-1,-1};
 }
@@ -467,29 +481,29 @@ Action AI::suansha(vector<vector<int>>&mp)const{
     cerr<<"not find duishou check_Four"<<endl;
 
     cerr<<"start my vct"<<endl;
-    res=vct(mp,vctDepth_,color);
+    res=vct(mp,vctDepth_,color,computeHash(mp));
     if(res.type!=ACT_JUMP) return res;
     cerr<<"not find my vct"<<endl;
     
-    cerr<<"start my check_live_Three"<<endl;
-    res=check_live_Three(mp,color);
-    if(res.type!=ACT_JUMP) return res;
-    cerr<<"not find my check_live_Three"<<endl;
+    // cerr<<"start my check_live_Three"<<endl;
+    // res=check_live_Three(mp,color);
+    // if(res.type!=ACT_JUMP) return res;
+    // cerr<<"not find my check_live_Three"<<endl;
 
     cerr<<"start duishou check_live_Three"<<endl;
     res=check_live_Three(mp,3-color);
     if(res.type!=ACT_JUMP) return res;
     cerr<<"not find duishou check_live_Three"<<endl;
 
-    cerr<<"start my double_three"<<endl;
-    res=double_three(mp,color);
-    if(res.type!=ACT_JUMP) return res;
-    cerr<<"not find my double_three"<<endl;
+    // cerr<<"start my double_three"<<endl;
+    // res=double_three(mp,color);
+    // if(res.type!=ACT_JUMP) return res;
+    // cerr<<"not find my double_three"<<endl;
 
-    cerr<<"start my vcf"<<endl;
-    res=vcf(mp,vcfDepth_,color);
-    if(res.type!=ACT_JUMP) return res;
-    cerr<<"not find my vcf"<<endl;
+    // cerr<<"start my vcf"<<endl;
+    // res=vcf(mp,vcfDepth_,color);
+    // if(res.type!=ACT_JUMP) return res;
+    // cerr<<"not find my vcf"<<endl;
 
     cerr<<"start duishou double_three"<<endl;
     res=double_three(mp,3-color);
