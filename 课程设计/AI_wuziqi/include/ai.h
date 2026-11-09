@@ -33,7 +33,7 @@ public:
     bool isThinking()const override{return thinking_;}
 private:
     bool check_model(const vector<vector<int>>&,int,int,int,int,const vector<int>&,int,bool)const;
-    bool patternScore(int,int,int)const;
+    Score_type patternScore(int,int,int)const;
     Score_type calc(const vector<vector<int>>&,int)const;
     Score_type get_score(const vector<vector<int>>&)const;
     Score_type local_score(const vector<vector<int>>&,int,int,int)const;

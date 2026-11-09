@@ -30,7 +30,7 @@ Action AI::turn(const vector<vector<int>> &board)const{
     }
     return {ACT_JUMP,-1,-1};
 }
-bool AI::patternScore(int cnt,int lcnt,int rcnt)const{
+Score_type AI::patternScore(int cnt,int lcnt,int rcnt)const{
     if(cnt>=5) return Win_score;
     if(lcnt>rcnt) swap(lcnt,rcnt);
     switch(cnt){
