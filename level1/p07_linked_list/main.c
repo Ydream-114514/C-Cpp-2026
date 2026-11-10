@@ -110,7 +110,8 @@ int main(){
 	printf("Find 5: %d\n",p);
 	int q=Find_next(x,5);
 	printf("Find next 5: %d\n",q);
+	Del(x);
+	Print(x);
 	Delete(x);
-	system("pause");
 	return 0;
 }
