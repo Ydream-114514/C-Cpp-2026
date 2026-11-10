@@ -19,7 +19,7 @@ int main(){
             buttonHandled=1;
         }else if(!~g.gameOver&&IsButtonClicked(resignBtn)){
             cerr<<g.turn<<endl;
-            g.gameOver=typeid(*g.p[1]).name()==typeid(Player).name();
+            g.gameOver=g.p[0]->isplayer()?0:1;
             g.score[g.gameOver]++;
             buttonHandled=1;
         }

@@ -1,8 +1,6 @@
 #pragma once
 #include "common.h"
 #include "ai.h"
-#include "player.h"
-#include "ai_random.h"
 
 enum class PlayerType{Human,AI,AI_random};
 
@@ -11,7 +9,6 @@ struct GameConfig{
     shared_ptr<AIConfig> c[2];
 };
 
-shared_ptr<Qishou> createPlayer(PlayerType,AIConfig&);
 struct GameState{
     vector<vector<int>> board;
     int turn;

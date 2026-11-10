@@ -1,5 +1,5 @@
 #include "game.h"
-
+#include "player_factory.h"
 
 bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     static const int dirs[4][2] ={{0,1},{1,0},{1,1},{1,-1}};
@@ -23,17 +23,7 @@ bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     }
     return false;
 }
-shared_ptr<Qishou> createPlayer(PlayerType t,shared_ptr<AIConfig> x){
-    switch(t){
-        case PlayerType::Human:
-            return make_shared<Player>(*x);
-        case PlayerType::AI:
-            return make_shared<AI>(*x);
-        case PlayerType::AI_random:
-            return make_shared<AI_random>(*x);
-    }
-    return nullptr;
-}
+
 
 void initGame(GameState &g,GameConfig &cfg){
     g.cfg=cfg;

@@ -31,6 +31,7 @@ public:
     }
     Action turn(const vector<vector<int>> &)const override;
     bool isThinking()const override{return thinking_;}
+    bool isplayer()const override{return 0;}
 private:
     bool check_model(const vector<vector<int>>&,int,int,int,int,const vector<int>&,int,bool)const;
     Score_type patternScore(int,int,int)const;

@@ -83,6 +83,7 @@ void Del(List *lis){
 	Node *tmp=lis->head;
 	while(tmp->nxt->nxt!=NULL) tmp=tmp->nxt;
 	free(tmp->nxt);
+	tmp->nxt=NULL;
 }
 void Delete(List *lis){
 	if(lis->head==NULL) return;

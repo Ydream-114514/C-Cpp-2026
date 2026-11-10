@@ -1,6 +1,6 @@
 #include "neuralnetwork.h"
 
-neural_matrix new_neural_matrix(int n,int m){
+neural_matrix new_matrix(int n,int m){
     return neural_matrix(n,vector<float>(m,0.0));
 }
 
@@ -81,7 +81,7 @@ void LeakyReLU_hadamard(const neural_matrix &a,const neural_matrix &b,neural_mat
 }
 neural_matrix LeakyReLU_derivative(const neural_matrix &a){
     const int n=a.size(),m=a[0].size();
-    neural_matrix c=new_neural_matrix(n,m);
+    neural_matrix c=new_matrix(n,m);
     for(int i=0;i<n;++i)
         for(int j=0;j<m;++j)
             c[i][j]=a[i][j]>0?1.0f:0.01f;
@@ -99,7 +99,7 @@ neural_matrix softmax(const neural_matrix &z) {
     for(int j=1;j<m;++j)
         max_val=max(max_val,z[0][j]);
     float sum=0;
-    neural_matrix res=new_neural_matrix(1, m);
+    neural_matrix res=new_matrix(1, m);
     for(int j=0;j<m;++j){
         res[0][j]=exp(z[0][j]-max_val);
         sum+=res[0][j];
@@ -112,28 +112,28 @@ void neural_network::init_network()const{
     W.resize(L);
     B.resize(L);
     for(int l=0;l<L;++l){
-        W[l]=new_neural_matrix(layer_sizes[l],layer_sizes[l+1]);
-        B[l]=new_neural_matrix(1,layer_sizes[l+1]);
+        W[l]=new_matrix(layer_sizes[l],layer_sizes[l+1]);
+        B[l]=new_matrix(1,layer_sizes[l+1]);
         he_init(W[l],layer_sizes[l]);
         // B 保持 0
     }
 }
 void neural_network::init_buffers()const{
     for(int l=0;l<L;++l){
-        Z[l]=new_neural_matrix(1,layer_sizes[l+1]);
-        dZ[l]=new_neural_matrix(1,layer_sizes[l+1]);
-        dW[l]=new_neural_matrix(layer_sizes[l],layer_sizes[l+1]);
-        sum_dW[l]=new_neural_matrix(layer_sizes[l],layer_sizes[l+1]);
-        sum_dB[l]=new_neural_matrix(1,layer_sizes[l+1]);
-        tA[l]=new_neural_matrix(layer_sizes[l],1);
-        tW[l]=new_neural_matrix(layer_sizes[l+1],layer_sizes[l]);
-        dA[l]=new_neural_matrix(1,layer_sizes[l]);
-        vW[l]=new_neural_matrix(layer_sizes[l],layer_sizes[l+1]);
-        vB[l]=new_neural_matrix(1,layer_sizes[l+1]);
-        D[l]=new_neural_matrix(1,layer_sizes[l+1]);
+        Z[l]=new_matrix(1,layer_sizes[l+1]);
+        dZ[l]=new_matrix(1,layer_sizes[l+1]);
+        dW[l]=new_matrix(layer_sizes[l],layer_sizes[l+1]);
+        sum_dW[l]=new_matrix(layer_sizes[l],layer_sizes[l+1]);
+        sum_dB[l]=new_matrix(1,layer_sizes[l+1]);
+        tA[l]=new_matrix(layer_sizes[l],1);
+        tW[l]=new_matrix(layer_sizes[l+1],layer_sizes[l]);
+        dA[l]=new_matrix(1,layer_sizes[l]);
+        vW[l]=new_matrix(layer_sizes[l],layer_sizes[l+1]);
+        vB[l]=new_matrix(1,layer_sizes[l+1]);
+        D[l]=new_matrix(1,layer_sizes[l+1]);
     }
     for(int l=0;l<=L;++l)
-        A[l]=new_neural_matrix(1,layer_sizes[l]);
+        A[l]=new_matrix(1,layer_sizes[l]);
 }
 void neural_network::forward(const neural_matrix &x,bool mode=0)const{
     A[0]=x;

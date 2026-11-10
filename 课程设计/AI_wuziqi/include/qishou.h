@@ -24,4 +24,5 @@ public:
     virtual Action turn(const vector<vector<int>>&) const=0;
     virtual bool isThinking()const=0;
     virtual ~Qishou()=default;
+    virtual bool isplayer()const=0;
 };

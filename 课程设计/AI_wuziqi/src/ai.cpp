@@ -1,5 +1,8 @@
 #include "common.h"
 #include "ai.h"
+#include "player_factory.h"
+
+static PlayerRegistrar<AI> reg_ai(PlayerType::AI);
 
 const Score_type Win_score     =1e8;
 const Score_type Full_Four     =1e6;
