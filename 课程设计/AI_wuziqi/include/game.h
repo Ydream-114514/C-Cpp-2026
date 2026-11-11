@@ -26,3 +26,4 @@ bool checkWin(const vector<vector<int>>&,int,int,int);
 void initGame(GameState &,GameConfig &);
 void ExitGame(GameState &);
 void Handle_result(GameState &,Action &);
+void run(GameState &);

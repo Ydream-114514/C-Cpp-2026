@@ -1,4 +1,5 @@
 #include "game.h"
+#include "ui.h"
 #include "player_factory.h"
 
 bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
@@ -23,7 +24,6 @@ bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     }
     return false;
 }
-
 
 void initGame(GameState &g,GameConfig &cfg){
     g.cfg=cfg;
@@ -61,5 +61,36 @@ void Handle_result(GameState &g,Action &result){
             }else g.turn^=1;
             break;
         default:break;
+    }
+}
+void run(GameState &g){
+    bool buttonHandled=0;
+    if(IsButtonClicked(restartBtn)){
+        initGame(g,g.cfg);
+        buttonHandled=1;
+    }else if(!~g.gameOver&&IsButtonClicked(resignBtn)){
+        g.gameOver=g.p[0]->isplayer()?0:1;
+        g.score[g.gameOver]++;
+        buttonHandled=1;
+    }
+    if(IsButtonClicked(returnBtn)){
+        if(!g.st.empty()){
+            g.gameOver=-1;
+            auto [r,c]=g.st.top();
+            g.st.pop();
+            g.board[r][c]=Chess_status::Empty;
+            if(g.st.empty()) g.lastc=g.lastr=-1;
+            else{
+                tie(r,c)=g.st.top();
+                g.st.pop();
+                g.board[r][c]=Chess_status::Empty;
+                if(g.st.empty()) g.lastc=g.lastr=-1;
+                else tie(g.lastr,g.lastc)=g.st.top();
+            }
+        }
+    }
+    if(!buttonHandled&&!~g.gameOver){
+        auto result=g.p[g.turn]->turn(g.board);
+        Handle_result(g,result);
     }
 }
