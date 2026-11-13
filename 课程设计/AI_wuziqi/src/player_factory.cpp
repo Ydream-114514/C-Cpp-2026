@@ -11,8 +11,8 @@ void registerPlayer(PlayerType t,PlayerFactory f){
     registry()[t]=move(f);
 }
 
-shared_ptr<Qishou> createPlayer(PlayerType t,shared_ptr<AIConfig> x){
+shared_ptr<Qishou> createPlayer(PlayerType t,QishouConfig *x){
     auto it=registry().find(t);
     if(it==registry().end()||!x) return nullptr;
-    return it->second(*x);
+    return it->second(x);
 }

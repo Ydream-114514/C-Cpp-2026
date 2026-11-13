@@ -25,72 +25,83 @@ bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
     return false;
 }
 
-void initGame(GameState &g,GameConfig &cfg){
-    g.cfg=cfg;
-    g.board=vector<vector<int>>(BOARD_SIZE,vector<int>(BOARD_SIZE,Chess_status::Empty));
+shared_ptr<Qishou> new_qishou(Player_mode x,int color){
+    switch(x){
+        case Player_mode::Player:
+            _player.color=color;
+            return createPlayer(PlayerType::Human,&_player);
+        case Player_mode::AI_eazy:
+            _AI_eazy.color=color;
+            return createPlayer(PlayerType::AI_search,&_AI_eazy);
+        case Player_mode::AI_hard:
+            _AI_hard.color=color;
+            return createPlayer(PlayerType::AI_search,&_AI_hard);
+        case Player_mode::AI_nn:
+            _AI_nn.color=color;
+            return createPlayer(PlayerType::AI_NN,&_AI_nn);
+        default:throw 0;
+    }
+}
+
+void GameState::initGame(){
+    board=vector<vector<int>>(BOARD_SIZE,vector<int>(BOARD_SIZE,Chess_status::Empty));
     bool blackFirst=randInt(0,1);
-    g.color[0]=blackFirst?Chess_status::White:Chess_status::Black;
-    g.color[1]=blackFirst?Chess_status::Black:Chess_status::White;
-    g.cfg.c[0]->color=g.color[0];
-    g.cfg.c[1]->color=g.color[1];
-    g.turn=blackFirst;
-    g.lastr=g.lastc=-1;
-    g.moveCount=0;
-    g.gameOver=-1;
-    g.st=stack<pair<int,int>>();
-    g.p[0]=createPlayer(cfg.p[0],g.cfg.c[0]);
-    g.p[1]=createPlayer(cfg.p[1],g.cfg.c[1]);
+    tie(color[blackFirst],color[blackFirst^1])=make_pair(Chess_status::Black,Chess_status::White);
+    turn=blackFirst;
+    gameOver=lastr=lastc=-1;
+    moveCount=0;
+    st=stack<pair<int,int>>();
+    p[0]=new_qishou(pp[0],color[0]);
+    p[1]=new_qishou(pp[1],color[1]);
 }
-void ExitGame(GameState &g){
-    g.p[0].reset();
-    g.p[1].reset();
+void GameState::ExitGame(){
+    p[0].reset();
+    p[1].reset();
 }
-void Handle_result(GameState &g,Action &result){
+void GameState::Handle_result(Action &result){
     switch(result.type){
         case ACT_MOVE:
-            g.board[result.row][result.col]=g.color[g.turn];
-            g.moveCount++;
-            g.lastr=result.row;
-            g.lastc=result.col;
-            g.st.emplace(result.row,result.col);
-            if(checkWin(g.board,result.row,result.col,g.color[g.turn])){
-                g.gameOver=g.turn;
-                g.score[g.turn]++;
-            }else if(g.moveCount==BOARD_SIZE*BOARD_SIZE){
-                g.gameOver=2;
-            }else g.turn^=1;
+            board[result.row][result.col]=color[turn];
+            moveCount++;
+            lastr=result.row;
+            lastc=result.col;
+            st.emplace(result.row,result.col);
+            if(checkWin(board,result.row,result.col,color[turn])){
+                gameOver=turn;
+                score[turn]++;
+            }else if(moveCount==BOARD_SIZE*BOARD_SIZE){
+                gameOver=2;
+            }else turn^=1;
             break;
         default:break;
     }
 }
-void run(GameState &g){
-    bool buttonHandled=0;
+void GameState::run(){
     if(IsButtonClicked(restartBtn)){
-        initGame(g,g.cfg);
-        buttonHandled=1;
-    }else if(!~g.gameOver&&IsButtonClicked(resignBtn)){
-        g.gameOver=g.p[0]->isplayer()?0:1;
-        g.score[g.gameOver]++;
-        buttonHandled=1;
+        initGame();
+    }else if(!~gameOver&&IsButtonClicked(resignBtn)){
+        gameOver=p[0]->isplayer()?1:0;
+        cerr<<gameOver<<endl;
+        score[gameOver]++;
     }
     if(IsButtonClicked(returnBtn)){
-        if(!g.st.empty()){
-            g.gameOver=-1;
-            auto [r,c]=g.st.top();
-            g.st.pop();
-            g.board[r][c]=Chess_status::Empty;
-            if(g.st.empty()) g.lastc=g.lastr=-1;
+        if(!st.empty()){
+            gameOver=-1;
+            auto [r,c]=st.top();
+            st.pop();
+            board[r][c]=Chess_status::Empty;
+            if(st.empty()) lastc=lastr=-1;
             else{
-                tie(r,c)=g.st.top();
-                g.st.pop();
-                g.board[r][c]=Chess_status::Empty;
-                if(g.st.empty()) g.lastc=g.lastr=-1;
-                else tie(g.lastr,g.lastc)=g.st.top();
+                tie(r,c)=st.top();
+                st.pop();
+                board[r][c]=Chess_status::Empty;
+                if(st.empty()) lastc=lastr=-1;
+                else tie(lastr,lastc)=st.top();
             }
         }
     }
-    if(!buttonHandled&&!~g.gameOver){
-        auto result=g.p[g.turn]->turn(g.board);
-        Handle_result(g,result);
+    if(!~gameOver){
+        auto result=p[turn]->turn(board);
+        Handle_result(result);
     }
 }

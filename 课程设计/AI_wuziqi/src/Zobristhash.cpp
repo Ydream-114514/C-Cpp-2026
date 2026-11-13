@@ -9,7 +9,6 @@ void ZobristHash::initZobristHash(int row,int col){
             zobrist_table[0][r][c]=dis(rng);
             zobrist_table[1][r][c]=dis(rng);
         }
-            
 }
 unsigned long long ZobristHash::computeHash(const vector<vector<int>>& board)const{
     unsigned long long hash_value=0;
@@ -26,7 +25,7 @@ unsigned long long ZobristHash::computeHash(const vector<vector<int>>& board)con
 bool ZobristHash::Find(unsigned long long hash_value)const{
     return hash_map.find(hash_value)!=hash_map.end();
 }
-void ZobristHash::Insert(unsigned long long hash_value,int r,int c){
+void ZobristHash::Insert(unsigned long long hash_value,int r,int c)const{
     hash_map[hash_value]={r,c};
 }
 pair<int,int> ZobristHash::Get(unsigned long long hash_value)const{

@@ -21,12 +21,20 @@ enum Chess_status{
     White=2
 };
 
+enum class PlayerType{
+    Human,
+    AI_random,
+    AI_search,
+    AI_NN
+};
+
 enum ActionType{
     ACT_MOVE,
     ACT_RESIGN,
     ACT_RESTART,
     ACT_JUMP
 };
+
 struct Action{
     ActionType type;
     int row;

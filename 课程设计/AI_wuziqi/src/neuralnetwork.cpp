@@ -1,19 +1,29 @@
 #include "neuralnetwork.h"
 
+// 局部静态 RNG：neural_network 可能作为全局对象被构造（如 debug/training.cpp），
+// 彼时全局 rng 可能尚未初始化（跨翻译单元的静态初始化顺序不定）。
+// 用函数局部静态 RNG 规避这一初始化顺序问题。
+static mt19937& nn_rng() {
+    static mt19937 rng((unsigned)chrono::steady_clock::now().time_since_epoch().count());
+    return rng;
+}
+
 neural_matrix new_matrix(int n,int m){
     return neural_matrix(n,vector<float>(m,0.0));
 }
 
+namespace {
+
 void he_init(neural_matrix &a, int fan_in) {
     double std_dev=sqrt(2.0/fan_in);
     normal_distribution<double> dist(0.0, std_dev);
-    for (auto &row:a)
-        for (auto &val:row)
-            val=dist(rng);
+    for (auto &Row:a)
+        for (auto &val:Row)
+            val=dist(nn_rng());
 }
 void zero_inplace(neural_matrix &a){
-    for(auto &row : a)
-        fill(row.begin(), row.end(), 0.0f);
+    for(auto &Row : a)
+        fill(Row.begin(), Row.end(), 0.0f);
 }
 void mul(const neural_matrix &a,const neural_matrix &b,neural_matrix &c){
     const int n=a.size(),m=a[0].size(),p=b[0].size();
@@ -48,18 +58,6 @@ void sub(const neural_matrix &a,const neural_matrix &b,neural_matrix &c){
     for(int i=0;i<n;++i)
         for(int j=0;j<m;++j)
             c[i][j]=a[i][j]-b[i][j];
-}
-void scalar_mul(const neural_matrix &a,float b,neural_matrix &c){
-    const int n=a.size(),m=a[0].size();
-    for(int i=0;i<n;++i)
-        for(int j=0;j<m;++j)
-            c[i][j]=a[i][j]*b;
-}
-void sub_scalar_mul(const neural_matrix &a,const neural_matrix &b,float c,neural_matrix &d){
-    const int n=a.size(),m=a[0].size();
-    for(int i=0;i<n;++i)
-        for(int j=0;j<m;++j)
-            d[i][j]=a[i][j]-b[i][j]*c;
 }
 void transpose(const neural_matrix &a, neural_matrix &c){
     const int n=a.size(),m=a[0].size();
@@ -108,6 +106,9 @@ neural_matrix softmax(const neural_matrix &z) {
         res[0][j]/=sum;
     return res;
 }
+
+} // namespace
+
 void neural_network::init_network()const{
     W.resize(L);
     B.resize(L);
@@ -119,6 +120,18 @@ void neural_network::init_network()const{
     }
 }
 void neural_network::init_buffers()const{
+    Z.resize(L);
+    dZ.resize(L);
+    dW.resize(L);
+    sum_dW.resize(L);
+    sum_dB.resize(L);
+    tA.resize(L);
+    tW.resize(L);
+    dA.resize(L);
+    vW.resize(L);
+    vB.resize(L);
+    D.resize(L);
+    A.resize(L + 1);
     for(int l=0;l<L;++l){
         Z[l]=new_matrix(1,layer_sizes[l+1]);
         dZ[l]=new_matrix(1,layer_sizes[l+1]);
@@ -135,7 +148,7 @@ void neural_network::init_buffers()const{
     for(int l=0;l<=L;++l)
         A[l]=new_matrix(1,layer_sizes[l]);
 }
-void neural_network::forward(const neural_matrix &x,bool mode=0)const{
+void neural_network::forward(const neural_matrix &x,bool mode)const{
     A[0]=x;
     uniform_real_distribution<float> dist(0,1);
     for(int l=0;l<L;++l){
@@ -143,7 +156,7 @@ void neural_network::forward(const neural_matrix &x,bool mode=0)const{
         if(l<L-1){
             if(mode){
                 for(int i=0;i<layer_sizes[l+1];++i)
-                    D[l][0][i]=(dist(rng)>p)/(1-p);
+                    D[l][0][i]=(dist(nn_rng())>p)/(1-p);
                 LeakyReLU_hadamard(Z[l],D[l],A[l+1]);
             }else LeakyReLU(Z[l],A[l+1]);
         }else A[l+1]=softmax(Z[l]);
@@ -193,14 +206,56 @@ void neural_network::load_data(string filename,vector<neural_matrix> &X,vector<n
         cerr<<"无法打开文件: "<<filename<<endl;
         return;
     }
+    cout<<"正在加载数据: "<<filename<<endl;
     try{
         string line;
         X.clear();
         Y.clear();
-        while(getline(file, line)) {
+        while(getline(file, line)){
             stringstream ss(line);
-            string value;
-            
+            int p1,p2,tot;
+            ss>>p1>>p2>>tot;
+            if(tot<2) continue; // 无效行：子数不足，跳过
+            vector<pair<int,int>> mvs(tot);
+            for(auto &it:mvs)
+                ss>>it.first>>it.second;
+            int win;
+            ss>>win;
+            neural_matrix x=new_matrix(1,Row*Col+1),y=new_matrix(1,Row*Col);
+            if(win==1){
+                x[0][Row*Col]=Chess_status::Black;  // 黑棋
+                int r,c;
+                for(int i=0;i<tot;i+=2){
+                    X.push_back(x);
+                    tie(r,c)=mvs[i];
+                    y[0][r*Col+c]=1;
+                    Y.push_back(y);
+                    y[0][r*Col+c]=0;
+                    x[0][r*Col+c]=Chess_status::Black;
+                    if(i!=tot-1){
+                        tie(r,c)=mvs[i+1];
+                        x[0][r*Col+c]=Chess_status::White;
+                    }
+                }
+            }else if(win==2){
+                x[0][Row*Col]=Chess_status::White;  // 白棋
+                auto [r,c]=mvs[0];
+                x[0][r*Col+c]=Chess_status::Black;
+                for(int i=1;i<tot;i+=2){
+                    X.push_back(x);
+                    tie(r,c)=mvs[i];
+                    y[0][r*Col+c]=1;
+                    Y.push_back(y);
+                    y[0][r*Col+c]=0;
+                    x[0][r*Col+c]=Chess_status::White;
+                    if(i!=tot-1){
+                        tie(r,c)=mvs[i+1];
+                        x[0][r*Col+c]=Chess_status::Black;
+                    }
+                }
+            }else{
+                continue; // win==0 平局：无胜者，跳过
+            }
         }
         file.close();
     }catch(...){
@@ -209,11 +264,13 @@ void neural_network::load_data(string filename,vector<neural_matrix> &X,vector<n
     }
     cout<<"加载完成: "<<X.size()<<" 个样本"<<endl;
 }
-void neural_network::training()const{
+void neural_network::training(string file)const{
     vector<neural_matrix> X,Y;
-    load_data("data.txt",X,Y);
-    init_network();
-    init_buffers();
+    load_data(file,X,Y);
+    if(X.empty()){
+        cerr<<"没有可用训练样本，训练中止"<<endl;
+        return;
+    }
     const int batch_size=64;
     const int num_batches=X.size()/batch_size;
     vector<int> idx(X.size());
@@ -221,13 +278,15 @@ void neural_network::training()const{
     vector<float> Loss;
     ofstream Log("loss.csv");
     Log<<"epoch,loss\n";
+    cout<<"开始训练..."<<endl;
+    cout<<"训练样本数: "<<X.size()<<", 批次大小: "<<batch_size<<", 批次数: "<<num_batches<<endl;
     clock_t start=clock();
     float lr=0.1f;
     for(int epoch=0;epoch<epochs;++epoch){
         if(epoch&&epoch%50==0) lr*=0.5f;
         float total_loss=0;
         int cnt=0;
-        shuffle(idx.begin(),idx.end(),rng);
+        shuffle(idx.begin(),idx.end(),nn_rng());
         for(int b=0;b<num_batches;++b){
             for(int l=0;l<L;++l){
                 zero_inplace(sum_dW[l]);
@@ -268,10 +327,10 @@ void neural_network::save_model(const string &path)const{
     for(int l=0; l<L;++l){
         auto write=[&](const neural_matrix &m){
             fout<<m.size()<<" "<<m[0].size()<<"\n";
-            for(auto &row:m){
-                for(int j=0; j<(int)row.size();++j){
+            for(auto &Row:m){
+                for(int j=0; j<(int)Row.size();++j){
                     if(j) fout<<" ";
-                    fout<<row[j];
+                    fout<<Row[j];
                 }
                 fout<<"\n";
             }
@@ -293,20 +352,15 @@ bool neural_network::load_model(const string &path)const{
     }
     for(int l=0;l<L;++l){
         auto read=[&](neural_matrix &m){
-            int n,cols;
-            fin>>n>>cols;
-            m.assign(n,vector<float>(cols));
+            int n,Cols;
+            fin>>n>>Cols;
+            m.assign(n,vector<float>(Cols));
             for(int i=0;i<n;++i)
-                for(int j=0;j<cols;++j)
+                for(int j=0;j<Cols;++j)
                     fin>>m[i][j];
         };
         read(W[l]);
         read(B[l]);
     }
     return true;
-}
-Action neural_network::computeMove(vector<vector<int>> mp)const{
-    // TODO: 接入模型推理。当前尚未实现，回退到父类 AI 的搜索策略，
-    // 避免 "no return statement in function returning non-void" 的未定义行为。
-    return AI::computeMove(mp);
 }

@@ -2,7 +2,7 @@
 #include "player_factory.h"
 #include "raylib.h"
 
-static PlayerRegistrar<Player> reg_human(PlayerType::Human);
+static PlayerRegistrar<Player,PlayerConfig> reg_human(PlayerType::Human);
 
 Action Player::turn(const vector<vector<int>>& board) const{
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
