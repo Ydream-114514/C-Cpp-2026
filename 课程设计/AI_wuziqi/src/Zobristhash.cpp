@@ -10,10 +10,11 @@ void ZobristHash::initZobristHash(int row,int col){
             zobrist_table[1][r][c]=dis(rng);
         }
 }
-unsigned long long ZobristHash::computeHash(const vector<vector<int>>& board)const{
+unsigned long long ZobristHash::computeHash(const Board& board)const{
     unsigned long long hash_value=0;
-    for(int r=0;r<(int)board.size();++r)
-        for(int c=0;c<(int)board[0].size();++c){
+    auto [row,col]=board.get_size();
+    for(int r=0;r<row;++r)
+        for(int c=0;c<col;++c){
             int s=board[r][c];
             if(s!=Chess_status::Empty){
                 int color=s-1;

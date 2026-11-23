@@ -3,7 +3,7 @@
 
 static PlayerRegistrar<AI_NN,AI_NNConfig> reg_ai_search(PlayerType::AI_NN);
 
-Action AI_NN::computeMove(vector<vector<int>> mp)const{
+Action AI_NN::computeMove(Board mp)const{
     neural_matrix input=new_matrix(1,row*col+1);
     for(int r=0;r<row;++r)
         for(int c=0;c<col;++c)

@@ -11,7 +11,7 @@ struct AI_NNConfig:QishouConfig{
 class AI_NN:public AI,public neural_network{
     mutable future<Action> future_;
     mutable bool thinking_ = false;
-    Action computeMove(vector<vector<int>>)const override;
+    Action computeMove(Board)const override;
 public:
     AI_NN(AI_NNConfig *x):AI(x),neural_network(x->row,x->col){
         load_model(x->model_file);

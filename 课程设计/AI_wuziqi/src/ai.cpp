@@ -1,6 +1,6 @@
 #include "ai.h"
 
-Action AI::turn(const vector<vector<int>> &board)const{
+Action AI::turn(const Board &board)const{
     if(!thinking_){
         thinking_=1;
         auto self=shared_from_this();

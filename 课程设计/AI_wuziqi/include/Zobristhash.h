@@ -8,7 +8,7 @@ public:
     ZobristHash(int r,int c){initZobristHash(r,c);}
 protected:
     void initZobristHash(int,int);
-    unsigned long long computeHash(const vector<vector<int>>&)const;
+    unsigned long long computeHash(const Board&)const;
     bool Find(unsigned long long)const;
     void Insert(unsigned long long,int,int)const;
     pair<int,int> Get(unsigned long long)const;

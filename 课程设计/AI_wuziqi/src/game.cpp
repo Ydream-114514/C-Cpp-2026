@@ -2,7 +2,7 @@
 #include "ui.h"
 #include "player_factory.h"
 
-bool checkWin(const vector<vector<int>>& board, int row, int col, int player){
+bool checkWin(const Board& board, int row, int col, int player){
     static const int dirs[4][2] ={{0,1},{1,0},{1,1},{1,-1}};
     for(const auto& [dr,dc] : dirs){
         int count=1;
@@ -39,12 +39,15 @@ shared_ptr<Qishou> new_qishou(Player_mode x,int color){
         case Player_mode::AI_nn:
             _AI_nn.color=color;
             return createPlayer(PlayerType::AI_NN,&_AI_nn);
+        case Player_mode::AI_MCTS:
+            _AI_hard.color=color;
+            return createPlayer(PlayerType::AI_MCTS,&_AI_hard);
         default:throw 0;
     }
 }
 
 void GameState::initGame(){
-    board=vector<vector<int>>(BOARD_SIZE,vector<int>(BOARD_SIZE,Chess_status::Empty));
+    board.clear();
     bool blackFirst=randInt(0,1);
     tie(color[blackFirst],color[blackFirst^1])=make_pair(Chess_status::Black,Chess_status::White);
     turn=blackFirst;

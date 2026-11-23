@@ -10,7 +10,7 @@ neural_matrix new_matrix(int n, int m);
 class neural_network {
     vector<int> layer_sizes;     // 各层神经元数
     const int L;                 // 权重层数 = layer_sizes.size()-1
-    const int epochs = 100;
+    const int epochs = 2000;
     const float p = 0.1;         // dropout 丢弃率
     const float momentum = 0.9f; // 动量
 

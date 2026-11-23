@@ -26,27 +26,27 @@ public:
         vctDepth_=x->vctDepth_;
     }
 private:
-    bool check_model(const vector<vector<int>>&,int,int,int,int,const vector<int>&,int,bool)const;
+    bool check_model(const Board&,int,int,int,int,const vector<int>&,int,bool)const;
     Score_type patternScore(int,int,int)const;
-    Score_type calc(const vector<vector<int>>&,int)const;
-    Score_type get_score(const vector<vector<int>>&)const;
-    Score_type local_score(const vector<vector<int>>&,int,int,int)const;
-    bool check(const vector<vector<int>>&,int,int)const;
-    vector<tuple<int,int,Score_type>> collection(vector<vector<int>>&,int,bool)const;
-    Score_type alpha_beta(vector<vector<int>>&,Score_type,Score_type,int,bool)const;
-    Action a_b_search(const vector<vector<int>>&)const;
-    Action search(vector<vector<int>>&)const;
-    Action vcf(vector<vector<int>>&,int,int)const;
-    Action vct(vector<vector<int>>&,int,int,unsigned long long)const;
-    bool check_db_thr(const vector<vector<int>>&,int,int,int)const;
-    Action double_three(vector<vector<int>>&,int)const;
-    Action check_Four(const vector<vector<int>>&,int)const;
-    Action check_live_Three(vector<vector<int>>&,int)const;
-    vector<Action> check_live_Three1(vector<vector<int>>&,int)const;
+    Score_type calc(const Board&,int)const;
+    Score_type get_score(const Board&)const;
+    Score_type local_score(const Board&,int,int,int)const;
+    bool check(const Board&,int,int)const;
+    vector<tuple<int,int,Score_type>> collection(Board&,int,bool)const;
+    Score_type alpha_beta(Board&,Score_type,Score_type,int,bool)const;
+    Action a_b_search(const Board&)const;
+    Action search(Board&)const;
+    Action vcf(Board&,int,int)const;
+    Action vct(Board&,int,int,unsigned long long)const;
+    bool check_db_thr(const Board&,int,int,int)const;
+    Action double_three(Board&,int)const;
+    Action check_Four(const Board&,int)const;
+    Action check_live_Three(Board&,int)const;
+    vector<Action> check_live_Three1(Board&,int)const;
 protected:
-    Action Rand_step(const vector<vector<int>>&)const;
-    Action suansha(vector<vector<int>>&)const;
-    virtual Action computeMove(vector<vector<int>>)const;
+    Action Rand_step(const Board&)const;
+    Action suansha(Board&)const;
+    virtual Action computeMove(Board)const;
 };
 
-bool checkWin(const vector<vector<int>>&,int,int,int);
+bool checkWin(const Board&,int,int,int);

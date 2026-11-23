@@ -12,7 +12,6 @@ struct QishouConfig{
 class Qishou{
 protected:
     int row,col,color;
-    bool in(int x,int y)const{return x>=0&&x<row&&y>=0&&y<col;}
 public:
     string name;
     Qishou()=delete;
@@ -22,7 +21,7 @@ public:
         color=x->color;
         name=x->name;
     };
-    virtual Action turn(const vector<vector<int>>&)const=0;
+    virtual Action turn(const Board&)const=0;
     virtual bool isThinking()const=0;
     virtual ~Qishou()=default;
     virtual bool isplayer()const=0;

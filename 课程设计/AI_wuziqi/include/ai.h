@@ -10,10 +10,10 @@ private:
     mutable bool thinking_ = false;
 public:
     AI(QishouConfig *x):Qishou(x){}
-    Action turn(const vector<vector<int>> &)const override;
+    Action turn(const Board &)const override;
     bool isThinking()const override{return thinking_;}
     bool isplayer()const override{return 0;}
 protected:
-    virtual Action computeMove(vector<vector<int>>)const=0;
+    virtual Action computeMove(Board)const=0;
 };
 

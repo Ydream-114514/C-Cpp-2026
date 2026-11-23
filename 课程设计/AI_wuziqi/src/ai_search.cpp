@@ -28,21 +28,21 @@ Score_type AI_search::patternScore(int cnt,int lcnt,int rcnt)const{
         default:return 0;
     }
 };
-Score_type AI_search::calc(const vector<vector<int>>& mp,int color)const{
+Score_type AI_search::calc(const Board & mp,int color)const{
     Score_type score=0;
     for(int r=0;r<row;++r)
         for(int c=0;c<col;++c)
             for(const auto& [dr,dc]:dirs){
                 if(mp[r][c]!=color) continue;
                 int pr=r-dr, pc=c-dc;
-                if(in(pr,pc)){
+                if(mp.in(pr,pc)){
                     if(mp[pr][pc]==Chess_status::Empty) score+=10;
                     else if(mp[pr][pc]==color) score+=20;
                     else if(mp[pr][pc]==3-color) score-=20;
                     else throw 0;
                 }
                 pr=r+dr, pc=c+dc;
-                if(in(pr,pc)){
+                if(mp.in(pr,pc)){
                     if(mp[pr][pc]==Chess_status::Empty) score+=10;
                     else if(mp[pr][pc]==color) score+=20;
                     else if(mp[pr][pc]==3-color) score-=20;
@@ -82,20 +82,20 @@ Score_type AI_search::calc(const vector<vector<int>>& mp,int color)const{
     //         }
     // return score;
 }
-Score_type AI_search::get_score(const vector<vector<int>>&mp)const{
+Score_type AI_search::get_score(const Board &mp)const{
     auto score1=calc(mp,color);
     auto score2=calc(mp,3-color);
     if(score1>=Win_score) return Win_score;
     if(score2>=Win_score) return -Win_score;
     return score1-score2*0.8f;
 }
-Score_type AI_search::local_score(const vector<vector<int>>&mp,int r,int c,int me)const{
+Score_type AI_search::local_score(const Board &mp,int r,int c,int me)const{
     Score_type total=0;
     for(auto& [dr,dc]:dirs){
         int cnt=1,lcnt=0,rcnt=0;
         for(int s=1;s<=4;++s){
             int nr=r+dr*s,nc=c+dc*s;
-            if(!in(nr,nc)) break;
+            if(!mp.in(nr,nc)) break;
             if(mp[nr][nc]==me) ++cnt;
             else{
                 if(mp[nr][nc]==Chess_status::Empty) ++rcnt;
@@ -104,7 +104,7 @@ Score_type AI_search::local_score(const vector<vector<int>>&mp,int r,int c,int m
         }
         for(int s=1;s<=4;++s){
             int nr=r-dr*s,nc=c-dc*s;
-            if(!in(nr,nc)) break;
+            if(!mp.in(nr,nc)) break;
             if(mp[nr][nc]==me) ++cnt;
             else{
                 if(mp[nr][nc]==Chess_status::Empty) ++lcnt;
@@ -115,15 +115,15 @@ Score_type AI_search::local_score(const vector<vector<int>>&mp,int r,int c,int m
     }
     return total;
 }
-bool AI_search::check(const vector<vector<int>>&mp,int x,int y)const{
+bool AI_search::check(const Board &mp,int x,int y)const{
     if(mp[x][y]!=Chess_status::Empty) return 0;
     for(int k=-pace;k<=pace;++k)
         for(int l=-pace;l<=pace;++l)
-            if(in(x+k,y+l)&&mp[x+k][y+l]!=Chess_status::Empty)
+            if(mp.in(x+k,y+l)&&mp[x+k][y+l]!=Chess_status::Empty)
                 return 1;
     return 0;
 }
-vector<tuple<int,int,Score_type>> AI_search::collection(vector<vector<int>>&mp,int me,bool flag)const{
+vector<tuple<int,int,Score_type>> AI_search::collection(Board &mp,int me,bool flag)const{
     vector<tuple<int,int,Score_type>> st;
      for(int i=0;i<row;++i)
         for(int j=0;j<col;++j)
@@ -150,7 +150,7 @@ vector<tuple<int,int,Score_type>> AI_search::collection(vector<vector<int>>&mp,i
     }
     return st;
 }
-Score_type AI_search::alpha_beta(vector<vector<int>>&mp,Score_type alpha,Score_type beta,int dep,bool is_max)const{
+Score_type AI_search::alpha_beta(Board &mp,Score_type alpha,Score_type beta,int dep,bool is_max)const{
     if(dep==depth) return get_score(mp);
     int me=is_max?color:3-color;
     auto st=collection(mp,me,is_max);
@@ -178,7 +178,7 @@ Score_type AI_search::alpha_beta(vector<vector<int>>&mp,Score_type alpha,Score_t
         return beta;
     }
 }
-Action AI_search::a_b_search(const vector<vector<int>>&board)const{
+Action AI_search::a_b_search(const Board &board)const{
     auto mp=board;
     auto st=collection(mp,color,1);
     int x=-1,y=-1;
@@ -205,9 +205,9 @@ struct model{
     vector<pair<int,vector<int>>> pos;
 };
 
-bool AI_search::check_model(const vector<vector<int>> &mp,int r,int c,int dr,int dc,const vector<int> &_model,int color,bool rev)const{
+bool AI_search::check_model(const Board  &mp,int r,int c,int dr,int dc,const vector<int> &_model,int color,bool rev)const{
     int len=_model.size();
-    if(in(r,c)&&in(r+(len-1)*dr,c+(len-1)*dc)){
+    if(mp.in(r,c)&&mp.in(r+(len-1)*dr,c+(len-1)*dc)){
         if(rev){
             for(int i=0;i<len;++i)
                 if(mp[r+i*dr][c+i*dc]!=_model[len-i-1]*color)
@@ -229,7 +229,7 @@ model One_step_kill_model[]={
     {{1,1,1,0,1},{{3,{}}}},
     {{1,1,1,1,0},{{4,{}}}},
 };
-Action AI_search::check_Four(const vector<vector<int>>&mp,int color)const{
+Action AI_search::check_Four(const Board &mp,int color)const{
     for(const auto &[dr,dc]:dirs)
         for(int r=0;r<row;++r)
             for(int c=0;c<col;++c)
@@ -246,7 +246,7 @@ model Two_steps_kill_model[]={
     {{0,1,1,1,0,0},{{4,{}}}},
     {{0,1,0,1,1,0},{{2,{}}}},
 };
-Action AI_search::check_live_Three(vector<vector<int>>&mp,int color)const{
+Action AI_search::check_live_Three(Board &mp,int color)const{
     for(const auto &[dr,dc]:dirs)
         for(int r=0;r<row;++r)
             for(int c=0;c<col;++c){
@@ -279,7 +279,7 @@ model Two_steps_kill_model1[]={
     {{0,1,1,1,0,0},{{0,{}},{4,{}},{5,{}}}},
     {{0,1,0,1,1,0},{{0,{}},{2,{}},{5,{}}}},
 };
-vector<Action> AI_search::check_live_Three1(vector<vector<int>>&mp,int color)const{
+vector<Action> AI_search::check_live_Three1(Board &mp,int color)const{
     for(const auto &[dr,dc]:dirs)
         for(int r=0;r<row;++r)
             for(int c=0;c<col;++c){
@@ -316,7 +316,7 @@ model vcf_model[]={
     {{1,1,0,1,0},{{2,{4}},{4,{2}}}},
     {{1,1,1,0,0},{{3,{4}},{4,{3}}}},
 };
-Action AI_search::vcf(vector<vector<int>>&mp,int dep,int color)const{
+Action AI_search::vcf(Board &mp,int dep,int color)const{
     auto res=check_Four(mp,color);
     if(res.type!=ACT_JUMP) return res;
     if(dep==0) return {ACT_JUMP,-1,-1};
@@ -343,7 +343,7 @@ Action AI_search::vcf(vector<vector<int>>&mp,int dep,int color)const{
     return {ACT_JUMP,-1,-1};
 }
 
-Action AI_search::vct(vector<vector<int>>&mp,int dep,int color,unsigned long long Hash)const{
+Action AI_search::vct(Board &mp,int dep,int color,unsigned long long Hash)const{
     if(Find(Hash)){
         auto [r,c]=Get(Hash);
         return {ACT_MOVE,r,c};
@@ -452,7 +452,7 @@ model db_thr_model[]={
     {{0,0,1,0,1,0},{{3,{}}}},
     {{0,1,0,0,1,0},{{2,{}}}},
 };
-bool AI_search::check_db_thr(const vector<vector<int>>&mp,int r,int c,int color)const{
+bool AI_search::check_db_thr(const Board &mp,int r,int c,int color)const{
     for(int i=0;i<3;++i)
         for(auto &it:db_thr_model){
             int pos=it.pos[0].first;
@@ -470,7 +470,7 @@ bool AI_search::check_db_thr(const vector<vector<int>>&mp,int r,int c,int color)
         }
     return 0;
 }
-Action AI_search::double_three(vector<vector<int>>&mp,int color)const{
+Action AI_search::double_three(Board &mp,int color)const{
     for(int r=0;r<row;++r)
         for(int c=0;c<col;++c)
             if(mp[r][c]==Chess_status::Empty&&check_db_thr(mp,r,c,color))
@@ -478,7 +478,7 @@ Action AI_search::double_three(vector<vector<int>>&mp,int color)const{
     return {ACT_JUMP,-1,-1};
 }
 
-Action AI_search::suansha(vector<vector<int>>&mp)const{
+Action AI_search::suansha(Board &mp)const{
     cerr<<"start my check_Four"<<endl;
     auto res=check_Four(mp,color);
     if(res.type!=ACT_JUMP) return res;
@@ -521,7 +521,7 @@ Action AI_search::suansha(vector<vector<int>>&mp)const{
 
     return {ACT_JUMP,-1,-1};
 }
-Action AI_search::search(vector<vector<int>>&mp)const{
+Action AI_search::search(Board &mp)const{
     static int cnt=0;
     cerr<<"cnt="<<++cnt<<endl;
     cerr<<"start suansha"<<endl;
@@ -533,7 +533,7 @@ Action AI_search::search(vector<vector<int>>&mp)const{
     if(res.type==ACT_JUMP) return res;
     return res;
 }
-Action AI_search::computeMove(vector<vector<int>> mp)const{
+Action AI_search::computeMove(Board mp)const{
     int cnt=0;
     for(const auto &i:mp)
         for(const auto &j:i)
@@ -545,14 +545,14 @@ Action AI_search::computeMove(vector<vector<int>> mp)const{
         for(int dr=-1;dr<=1;++dr)
             for(int dc=-1;dc<=1;++dc){
                 int r=row/2+dr,c=col/2+dc;
-                if(in(r,c)&&mp[r][c]==Chess_status::Empty)
+                if(mp.in(r,c)&&mp[r][c]==Chess_status::Empty)
                     st.push_back({ACT_MOVE,r,c});
             }
         if(st.empty()||rand_float(0.2)) return Rand_step(mp);
         else return st[randInt(0,st.size()-1)];
     }else return search(mp);
 }
-Action AI_search::Rand_step(const vector<vector<int>>&board)const{
+Action AI_search::Rand_step(const Board &board)const{
     vector<pair<int,int>> c;
     for(int i=0;i<row;++i)
         for(int j=0;j<col;++j)

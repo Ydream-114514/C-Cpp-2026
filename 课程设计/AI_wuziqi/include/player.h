@@ -9,7 +9,7 @@ struct PlayerConfig:QishouConfig{
 class Player : public Qishou{
 public:
     Player(PlayerConfig *x):Qishou(x){}
-    Action turn(const vector<vector<int>>&) const override;
+    Action turn(const Board&) const override;
     bool isThinking()const override{return 1;}
     bool isplayer()const override{return 1;}
 };

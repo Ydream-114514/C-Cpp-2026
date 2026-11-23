@@ -25,7 +25,8 @@ enum class PlayerType{
     Human,
     AI_random,
     AI_search,
-    AI_NN
+    AI_NN,
+    AI_MCTS
 };
 
 enum ActionType{
@@ -41,4 +42,51 @@ struct Action{
     int col;
     Action()=default;
     Action(ActionType t,int r,int c):type(t),row(r),col(c){}
+};
+
+class Board{
+    vector<vector<int>> mp;
+    int r,c;
+public:
+    Board()=delete;
+    Board(int r,int c):mp(r,vector<int>(c,Chess_status::Empty)),r(r),c(c){}
+    bool in(int x,int y)const{
+        return x>=0&&x<r&&y>=0&&y<c;
+    }
+    pair<int, int> get_size() const {
+        return make_pair(r, c);
+    }
+    int count()const{
+        int cnt=0;
+        for(auto &i:mp)
+            for(auto &j:i)
+                if(j!=Chess_status::Empty)
+                    cnt++;
+        return cnt;
+    }
+    vector<int> &operator[](int x){
+        return mp[x];
+    }
+    const vector<int> &operator[](int x)const{
+        return mp[x];
+    }
+    void clear(){
+        for(auto &it:mp)
+            fill(it.begin(),it.end(),Chess_status::Empty);
+    }
+    auto begin(){
+        return mp.begin();
+    }
+    const auto begin()const{
+        return mp.begin();
+    }
+    auto end(){
+        return mp.end();
+    }
+    const auto end()const{
+        return mp.end();
+    }
+    bool isfull()const{
+        return count()==r*c;
+    }
 };
