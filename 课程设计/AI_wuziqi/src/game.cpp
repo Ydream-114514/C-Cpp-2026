@@ -2,29 +2,6 @@
 #include "ui.h"
 #include "player_factory.h"
 
-bool checkWin(const Board& board, int row, int col, int player){
-    static const int dirs[4][2] ={{0,1},{1,0},{1,1},{1,-1}};
-    for(const auto& [dr,dc] : dirs){
-        int count=1;
-        for(int step=1;step<5;++step){ 
-            int r=row+dr * step;
-            int c=col+dc * step;
-            if(r<0 || r >= BOARD_SIZE || c<0 || c >= BOARD_SIZE) break;
-            if(board[r][c]==player) ++count;
-            else break;
-        }
-        for(int step=1;step<5;++step){
-            int r=row-dr * step;
-            int c=col-dc * step;
-            if(r<0 || r >= BOARD_SIZE || c<0 || c >= BOARD_SIZE) break;
-            if(board[r][c]==player) ++count;
-            else break;
-        }
-        if (count>=5) return true;
-    }
-    return false;
-}
-
 shared_ptr<Qishou> new_qishou(Player_mode x,int color){
     switch(x){
         case Player_mode::Player:
@@ -69,7 +46,7 @@ void GameState::Handle_result(Action &result){
             lastr=result.row;
             lastc=result.col;
             st.emplace(result.row,result.col);
-            if(checkWin(board,result.row,result.col,color[turn])){
+            if(board.check_win(result.row,result.col,color[turn])){
                 gameOver=turn;
                 score[turn]++;
             }else if(moveCount==BOARD_SIZE*BOARD_SIZE){
@@ -84,7 +61,6 @@ void GameState::run(){
         initGame();
     }else if(!~gameOver&&IsButtonClicked(resignBtn)){
         gameOver=p[0]->isplayer()?1:0;
-        cerr<<gameOver<<endl;
         score[gameOver]++;
     }
     if(IsButtonClicked(returnBtn)){

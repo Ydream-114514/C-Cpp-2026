@@ -12,7 +12,7 @@ struct PlayerRegistrar{
     explicit PlayerRegistrar(PlayerType t){
         registerPlayer(t,[](QishouConfig *c) -> shared_ptr<Qishou> {
             ConfigT *cc=dynamic_cast<ConfigT*>(c);
-            return std::make_shared<T>(cc);
+            return std::make_shared<T>(cc); 
         });
     }
 };

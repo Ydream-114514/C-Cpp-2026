@@ -44,12 +44,11 @@ struct Action{
     Action(ActionType t,int r,int c):type(t),row(r),col(c){}
 };
 
-class Board{
-    vector<vector<int>> mp;
+class Board:public vector<vector<int>>{
     int r,c;
 public:
     Board()=delete;
-    Board(int r,int c):mp(r,vector<int>(c,Chess_status::Empty)),r(r),c(c){}
+    Board(int r,int c):vector<vector<int>>(r,vector<int>(c,Chess_status::Empty)),r(r),c(c){}
     bool in(int x,int y)const{
         return x>=0&&x<r&&y>=0&&y<c;
     }
@@ -58,35 +57,35 @@ public:
     }
     int count()const{
         int cnt=0;
-        for(auto &i:mp)
+        for(auto &i:*this)
             for(auto &j:i)
                 if(j!=Chess_status::Empty)
                     cnt++;
         return cnt;
     }
-    vector<int> &operator[](int x){
-        return mp[x];
-    }
-    const vector<int> &operator[](int x)const{
-        return mp[x];
-    }
     void clear(){
-        for(auto &it:mp)
+        for(auto &it:*this)
             fill(it.begin(),it.end(),Chess_status::Empty);
-    }
-    auto begin(){
-        return mp.begin();
-    }
-    const auto begin()const{
-        return mp.begin();
-    }
-    auto end(){
-        return mp.end();
-    }
-    const auto end()const{
-        return mp.end();
     }
     bool isfull()const{
         return count()==r*c;
+    }
+    bool check_win(int r,int c,int color)const{
+        static const int dirs[4][2]={{0,1},{1,0},{1,1},{1,-1}};
+        for(const auto &[dr,dc]:dirs){
+            int cnt=1;
+            for(int s=1;s<5;++s){
+                int nr=r+dr*s,nc=c+dc*s;
+                if(!in(nr,nc)||(*this)[nr][nc]!=color) break;
+                ++cnt;
+            }
+            for(int s=1;s<5;++s){
+                int nr=r-dr*s,nc=c-dc*s;
+                if(!in(nr,nc)||(*this)[nr][nc]!=color) break;
+                ++cnt;
+            }
+            if(cnt>=5) return true;
+        }
+        return false;
     }
 };

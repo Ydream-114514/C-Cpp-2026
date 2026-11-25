@@ -43,5 +43,3 @@ public:
     ~GameState(){ExitGame();}
     void run();
 };
-
-bool checkWin(const Board&,int,int,int);

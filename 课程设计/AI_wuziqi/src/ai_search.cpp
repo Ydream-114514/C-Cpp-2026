@@ -157,7 +157,7 @@ Score_type AI_search::alpha_beta(Board &mp,Score_type alpha,Score_type beta,int 
     if(is_max){
         for(auto [i,j,ignore]:st){
             mp[i][j]=me;
-            if(checkWin(mp,i,j,me)){
+            if(mp.check_win(i,j,me)){
                 mp[i][j]=Chess_status::Empty;
                 return Win_score-dep;
             }else alpha=max(alpha,alpha_beta(mp,alpha,beta,dep+1,0));
@@ -168,7 +168,7 @@ Score_type AI_search::alpha_beta(Board &mp,Score_type alpha,Score_type beta,int 
     }else{
         for(auto [i,j,ignore]:st){
             mp[i][j]=me;
-            if(checkWin(mp,i,j,me)){
+            if(mp.check_win(i,j,me)){
                 mp[i][j]=Chess_status::Empty;
                 return dep-Win_score;
             }else beta=min(beta,alpha_beta(mp,alpha,beta,dep+1,1));
@@ -185,7 +185,7 @@ Action AI_search::a_b_search(const Board &board)const{
     Score_type max_score=-1e18;
     for(auto [i,j,ignore]:st){
         mp[i][j]=color;
-        if(checkWin(mp,i,j,color)){
+        if(mp.check_win(i,j,color)){
             mp[i][j]=Chess_status::Empty;
             return {ACT_MOVE,i,j};
         }
@@ -376,7 +376,7 @@ Action AI_search::vct(Board &mp,int dep,int color,unsigned long long Hash)const{
             mp[r][c]=Chess_status::Empty;
             return {ACT_JUMP,-1,-1};
         }
-        for(auto [ignore,mr,mc]:res1){
+        for(auto &[ignore,mr,mc]:res1){
             mp[mr][mc]=3-color;
             res=vct(mp,dep-1,color,Add(Add(Hash,r,c,color),mr,mc,3-color));
             mp[mr][mc]=Chess_status::Empty;
